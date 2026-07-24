@@ -12,7 +12,15 @@ export interface Product {
   price: number
   stock: number
   state: ProductState
+  barcode: string | null
+  weight_kg: number
+  width_cm: number
+  height_cm: number
+  depth_cm: number
+  image_path: string | null
+  image_url: string | null
   create_at: string
+  update_at: string
 }
 
 export interface ProductForm {
@@ -21,6 +29,11 @@ export interface ProductForm {
   price: number
   stock: number
   state: ProductState
+  barcode: string
+  weight_kg: number
+  width_cm: number
+  height_cm: number
+  depth_cm: number
 }
 
 export function createEmptyProduct(): ProductForm {
@@ -30,5 +43,10 @@ export function createEmptyProduct(): ProductForm {
     price: 0,
     stock: 0,
     state: ProductState.ACTIVE,
+    barcode: '',
+    weight_kg: 0,
+    width_cm: 0,
+    height_cm: 0,
+    depth_cm: 0,
   }
 }

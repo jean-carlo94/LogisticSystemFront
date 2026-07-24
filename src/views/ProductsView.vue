@@ -1,12 +1,46 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsTable from '@/components/products/ProductsTable.vue'
+import { ProductState } from '@/types/product'
 
 const store = useProductsStore()
 const auth = useAuthStore()
+
+const fName = ref('')
+const fBarcode = ref('')
+const fState = ref('')
+const fStock = ref('')
+
+
+watch([fName, fBarcode, fState, fStock], () => {
+  if (hasFilters()) {
+    doFilter()
+  } else if (Object.keys(store.filterParams).length > 0) {
+    store.setFilter({})
+  }
+})
+
+function doFilter() {
+  const p: Record<string, string> = {}
+  if (fName.value) p.name = fName.value
+  if (fBarcode.value) p.barcode = fBarcode.value
+  if (fState.value) p.state = fState.value
+  if (fStock.value) p.stock = fStock.value
+  store.setFilter(p)
+}
+
+function clearFilter() {
+  fName.value = ''
+  fBarcode.value = ''
+  fState.value = ''
+  fStock.value = ''
+  store.setFilter({})
+}
+
+const hasFilters = () => fName.value || fBarcode.value || fState.value || fStock.value
 
 onMounted(() => {
   store.fetchProducts()
@@ -21,6 +55,21 @@ onMounted(() => {
     </div>
 
     <ProductForm />
+
+    <div class="filter-bar">
+      <input v-model="fName" type="text" placeholder="Nombre" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fBarcode" type="text" placeholder="Código de barras" class="filter-field" @keyup.enter="doFilter" />
+      <select v-model="fState" class="filter-field" @change="doFilter">
+        <option value="">Estado</option>
+        <option :value="ProductState.ACTIVE">Activo</option>
+        <option :value="ProductState.INACTIVE">Inactivo</option>
+        <option :value="ProductState.NO_STOCK">Sin stock</option>
+        <option :value="ProductState.DISCONTINUED">Descontinuado</option>
+      </select>
+      <input v-model="fStock" type="number" min="0" placeholder="Stock exacto" class="filter-field filter-num" @keyup.enter="doFilter" />
+      <button class="btn" @click="doFilter">Filtrar</button>
+      <button v-if="hasFilters()" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
+    </div>
 
     <div v-if="store.loading && store.products.length === 0" class="skeleton-table">
       <div v-for="i in 5" :key="i" class="skeleton-row">
@@ -50,4 +99,20 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-field {
+  width: auto;
+  min-width: 150px;
+}
+
+.filter-num {
+  max-width: 120px;
+}
 </style>

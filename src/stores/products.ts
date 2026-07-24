@@ -17,6 +17,7 @@ export const useProductsStore = defineStore('products', () => {
   const size = ref(10)
   const total = ref(0)
   const pages = ref(0)
+  const filterParams = ref<Record<string, string>>({})
 
   const isEditing = computed(() => editingId.value !== null)
 
@@ -25,7 +26,7 @@ export const useProductsStore = defineStore('products', () => {
     error.value = null
 
     try {
-      const res = await productsService.getAll(page.value, size.value)
+      const res = await productsService.getAll(page.value, size.value, filterParams.value)
       products.value = res.items
       total.value = res.total
       pages.value = res.pages
@@ -34,6 +35,12 @@ export const useProductsStore = defineStore('products', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  function setFilter(filters: Record<string, string>) {
+    filterParams.value = filters
+    page.value = 1
+    fetchProducts()
   }
 
   function goToPage(p: number) {
@@ -60,6 +67,11 @@ export const useProductsStore = defineStore('products', () => {
       price: product.price,
       stock: product.stock,
       state: product.state,
+      barcode: product.barcode ?? '',
+      weight_kg: product.weight_kg,
+      width_cm: product.width_cm,
+      height_cm: product.height_cm,
+      depth_cm: product.depth_cm,
     }
     editingId.value = product.id
     isFormOpen.value = true
@@ -82,14 +94,46 @@ export const useProductsStore = defineStore('products', () => {
         if (index !== -1) {
           products.value[index] = updated
         }
+        closeForm()
       } else {
-        await productsService.create(form.value)
+        const created = await productsService.create(form.value)
+        editingId.value = created.id
       }
-
-      closeForm()
       fetchProducts()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al guardar producto'
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function uploadProductImage(id: number, file: File) {
+    saving.value = true
+    error.value = null
+    try {
+      const updated = await productsService.uploadImage(id, file)
+      const index = products.value.findIndex((p) => p.id === id)
+      if (index !== -1) {
+        products.value[index] = updated
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al subir imagen'
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function deleteProductImage(id: number) {
+    saving.value = true
+    error.value = null
+    try {
+      await productsService.deleteImage(id)
+      const index = products.value.findIndex((p) => p.id === id)
+      if (index !== -1) {
+        products.value[index] = { ...products.value[index], image_path: null, image_url: null }
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al eliminar imagen'
     } finally {
       saving.value = false
     }
@@ -125,6 +169,7 @@ export const useProductsStore = defineStore('products', () => {
     page.value = 1
     total.value = 0
     pages.value = 0
+    filterParams.value = {}
   }
 
   return {
@@ -139,8 +184,10 @@ export const useProductsStore = defineStore('products', () => {
     size,
     total,
     pages,
+    filterParams,
     isEditing,
     fetchProducts,
+    setFilter,
     goToPage,
     setSize,
     openCreateForm,
@@ -148,6 +195,8 @@ export const useProductsStore = defineStore('products', () => {
     closeForm,
     saveProduct,
     deleteProduct,
+    uploadProductImage,
+    deleteProductImage,
     reset,
   }
 })

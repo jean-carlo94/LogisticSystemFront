@@ -23,6 +23,7 @@ export const useUsersStore = defineStore('users', () => {
   const size = ref(20)
   const total = ref(0)
   const pages = ref(0)
+  const filterParams = ref<Record<string, string>>({})
 
   const isEditing = computed(() => editingId.value !== null)
 
@@ -30,7 +31,7 @@ export const useUsersStore = defineStore('users', () => {
     loading.value = true
     error.value = null
     try {
-      const res = await usersService.getAll(page.value, size.value)
+      const res = await usersService.getAll(page.value, size.value, filterParams.value)
       users.value = res.items
       total.value = res.total
       pages.value = res.pages
@@ -39,6 +40,12 @@ export const useUsersStore = defineStore('users', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  function setFilter(filters: Record<string, string>) {
+    filterParams.value = filters
+    page.value = 1
+    fetchUsers()
   }
 
   async function fetchRoles() {
@@ -85,6 +92,7 @@ export const useUsersStore = defineStore('users', () => {
     page.value = 1
     total.value = 0
     pages.value = 0
+    filterParams.value = {}
   }
 
   function openEditForm(user: UserAdmin) {
@@ -179,6 +187,38 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  async function uploadUserImage(id: number, file: File) {
+    saving.value = true
+    error.value = null
+    try {
+      const updated = await usersService.uploadImage(id, file)
+      const index = users.value.findIndex((u) => u.id === id)
+      if (index !== -1) {
+        users.value[index] = updated
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al subir imagen'
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function deleteUserImage(id: number) {
+    saving.value = true
+    error.value = null
+    try {
+      await usersService.deleteImage(id)
+      const index = users.value.findIndex((u) => u.id === id)
+      if (index !== -1) {
+        users.value[index] = { ...users.value[index], image_path: null, image_url: null }
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al eliminar imagen'
+    } finally {
+      saving.value = false
+    }
+  }
+
   return {
     users,
     roles,
@@ -195,9 +235,11 @@ export const useUsersStore = defineStore('users', () => {
     size,
     total,
     pages,
+    filterParams,
     isEditing,
     fetchUsers,
     fetchRoles,
+    setFilter,
     goToPage,
     setSize,
     openEditForm,
@@ -208,6 +250,8 @@ export const useUsersStore = defineStore('users', () => {
     openAssign,
     closeAssign,
     saveAssignRole,
+    uploadUserImage,
+    deleteUserImage,
     reset,
   }
 })

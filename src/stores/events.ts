@@ -13,20 +13,24 @@ export const useEventsStore = defineStore('events', () => {
   const total = ref(0)
   const pages = ref(0)
   const productFilterId = ref<number | null>(null)
+  const filterParams = ref<Record<string, string>>({})
 
   async function fetchEvents() {
     loading.value = true
     error.value = null
 
     try {
-      const res =
-        productFilterId.value !== null
-          ? await eventsService.getByProduct(productFilterId.value, page.value, size.value)
-          : await eventsService.getAll(page.value, size.value)
-
-      events.value = res.items
-      total.value = res.total
-      pages.value = res.pages
+      if (productFilterId.value !== null) {
+        const res = await eventsService.getByProduct(productFilterId.value, page.value, size.value)
+        events.value = res.items
+        total.value = res.total
+        pages.value = res.pages
+      } else {
+        const res = await eventsService.getAll(page.value, size.value, filterParams.value)
+        events.value = res.items
+        total.value = res.total
+        pages.value = res.pages
+      }
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al cargar eventos'
     } finally {
@@ -37,6 +41,13 @@ export const useEventsStore = defineStore('events', () => {
   function setProductFilter(productId: number | null) {
     productFilterId.value = productId
     page.value = 1
+  }
+
+  function setFilter(filters: Record<string, string>) {
+    filterParams.value = filters
+    productFilterId.value = null
+    page.value = 1
+    fetchEvents()
   }
 
   function goToPage(p: number) {
@@ -58,6 +69,7 @@ export const useEventsStore = defineStore('events', () => {
     total.value = 0
     pages.value = 0
     productFilterId.value = null
+    filterParams.value = {}
   }
 
   return {
@@ -68,7 +80,9 @@ export const useEventsStore = defineStore('events', () => {
     size,
     total,
     pages,
+    filterParams,
     setProductFilter,
+    setFilter,
     fetchEvents,
     goToPage,
     setSize,

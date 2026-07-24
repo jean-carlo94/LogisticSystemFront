@@ -17,4 +17,16 @@ export const authService = {
   async updateMe(data: ProfileUpdate): Promise<User> {
     return api.put('/auth/me', data) as Promise<User>
   },
+
+  async uploadAvatar(file: File): Promise<User> {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/auth/me/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }) as Promise<User>
+  },
+
+  async deleteAvatar(): Promise<void> {
+    return api.delete('/auth/me/image') as Promise<void>
+  },
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRolesStore } from '@/stores/roles'
 import { useAuthStore } from '@/stores/auth'
 import RolesTable from '@/components/roles/RolesTable.vue'
@@ -8,6 +8,30 @@ import PermissionsModal from '@/components/roles/PermissionsModal.vue'
 
 const store = useRolesStore()
 const auth = useAuthStore()
+
+const fName = ref('')
+const fDesc = ref('')
+
+watch([fName, fDesc], () => {
+  if (fName.value || fDesc.value) {
+    doFilter()
+  } else if (Object.keys(store.filterParams).length > 0) {
+    store.setFilter({})
+  }
+})
+
+function doFilter() {
+  const p: Record<string, string> = {}
+  if (fName.value) p.name = fName.value
+  if (fDesc.value) p.description = fDesc.value
+  store.setFilter(p)
+}
+
+function clearFilter() {
+  fName.value = ''
+  fDesc.value = ''
+  store.setFilter({})
+}
 
 onMounted(() => {
   store.fetchRoles()
@@ -20,6 +44,13 @@ onMounted(() => {
     <div class="page-header">
       <h1>Roles</h1>
       <button v-if="auth.hasPermission('roles_manage')" class="btn btn-primary" @click="store.openCreateForm()">+ Nuevo rol</button>
+    </div>
+
+    <div class="filter-bar">
+      <input v-model="fName" type="text" placeholder="Nombre del rol" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fDesc" type="text" placeholder="Descripción" class="filter-field" @keyup.enter="doFilter" />
+      <button class="btn" @click="doFilter">Filtrar</button>
+      <button v-if="fName || fDesc" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>
 
     <div v-if="store.loading && store.roles.length === 0" class="skeleton-table">
@@ -44,5 +75,18 @@ onMounted(() => {
 <style scoped>
 .page {
   max-width: 1100px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-field {
+  width: auto;
+  min-width: 180px;
 }
 </style>

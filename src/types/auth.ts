@@ -8,6 +8,8 @@ export interface User {
   country: string | null
   is_active: boolean
   is_super_admin: boolean
+  image_path: string | null
+  image_url: string | null
   created_at: string
   updated_at: string
   roles: UserRole[]

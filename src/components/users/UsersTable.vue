@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users'
 import { useAuthStore } from '@/stores/auth'
-import { formatDate } from '@/composables/useFormat'
+import { formatDate, getMediaUrl } from '@/composables/useFormat'
 import Pagination from '@/components/ui/Pagination.vue'
 
 const store = useUsersStore()
@@ -19,6 +19,7 @@ function fullName(user: { first_name: string | null; last_name: string | null })
         <thead>
           <tr>
             <th>#</th>
+            <th>Avatar</th>
             <th>Email</th>
             <th>Nombre</th>
             <th>Ciudad</th>
@@ -31,6 +32,15 @@ function fullName(user: { first_name: string | null; last_name: string | null })
         <tbody>
           <tr v-for="user in store.users" :key="user.id">
             <td class="id-cell">{{ user.id }}</td>
+            <td>
+              <img
+                v-if="user.image_url"
+                :src="getMediaUrl(user.image_url) || ''"
+                class="user-avatar"
+                alt=""
+              />
+              <span v-else class="no-avatar">—</span>
+            </td>
             <td class="email-cell">{{ user.email }}</td>
             <td>{{ fullName(user) }}</td>
             <td class="muted">{{ user.city || '—' }}</td>
@@ -87,4 +97,17 @@ function fullName(user: { first_name: string | null; last_name: string | null })
   background: var(--purple-light); color: var(--purple);
 }
 .badge-normal { font-size: 13px; color: var(--text-muted); }
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+}
+
+.no-avatar {
+  color: var(--text-muted);
+  font-size: 13px;
+}
 </style>

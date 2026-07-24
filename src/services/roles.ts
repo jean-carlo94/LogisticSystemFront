@@ -3,8 +3,14 @@ import type { PaginatedResponse } from '@/types/pagination'
 import type { Role, RoleForm, Permission, AssignPermissionsPayload } from '@/types/role'
 
 export const rolesService = {
-  async getAll(page = 1, size = 20): Promise<PaginatedResponse<Role>> {
-    return api.get('/roles/', { params: { page, size } }) as Promise<PaginatedResponse<Role>>
+  async getAll(page = 1, size = 20, filters?: Record<string, string>): Promise<PaginatedResponse<Role>> {
+    const params: Record<string, string | number> = { page, size }
+    if (filters) {
+      for (const [k, v] of Object.entries(filters)) {
+        if (v) params[k] = v
+      }
+    }
+    return api.get('/roles/', { params }) as Promise<PaginatedResponse<Role>>
   },
 
   async create(data: RoleForm): Promise<Role> {

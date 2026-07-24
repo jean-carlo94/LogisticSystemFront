@@ -20,6 +20,7 @@ export const useRolesStore = defineStore('roles', () => {
   const size = ref(20)
   const total = ref(0)
   const pages = ref(0)
+  const filterParams = ref<Record<string, string>>({})
 
   const isEditing = computed(() => editingId.value !== null)
 
@@ -27,7 +28,7 @@ export const useRolesStore = defineStore('roles', () => {
     loading.value = true
     error.value = null
     try {
-      const res = await rolesService.getAll(page.value, size.value)
+      const res = await rolesService.getAll(page.value, size.value, filterParams.value)
       roles.value = res.items
       total.value = res.total
       pages.value = res.pages
@@ -36,6 +37,12 @@ export const useRolesStore = defineStore('roles', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  function setFilter(filters: Record<string, string>) {
+    filterParams.value = filters
+    page.value = 1
+    fetchRoles()
   }
 
   async function fetchPermissions() {
@@ -80,6 +87,7 @@ export const useRolesStore = defineStore('roles', () => {
     page.value = 1
     total.value = 0
     pages.value = 0
+    filterParams.value = {}
   }
 
   function openCreateForm() {
@@ -171,10 +179,12 @@ export const useRolesStore = defineStore('roles', () => {
     size,
     total,
     pages,
+    filterParams,
     isEditing,
     fetchRoles,
     fetchPermissions,
     fetchRolePermissions,
+    setFilter,
     goToPage,
     setSize,
     openCreateForm,

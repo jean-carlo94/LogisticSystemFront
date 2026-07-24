@@ -3,6 +3,7 @@ import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
 import ProductBadge from './ProductBadge.vue'
 import Pagination from '@/components/ui/Pagination.vue'
+import { getMediaUrl } from '@/composables/useFormat'
 
 const store = useProductsStore()
 const auth = useAuthStore()
@@ -15,9 +16,11 @@ const auth = useAuthStore()
         <thead>
           <tr>
             <th>#</th>
+            <th>Img</th>
             <th>Nombre</th>
             <th>Precio</th>
             <th>Stock</th>
+            <th>Código</th>
             <th>Estado</th>
             <th v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')"></th>
           </tr>
@@ -26,16 +29,26 @@ const auth = useAuthStore()
           <tr v-for="product in store.products" :key="product.id">
             <td class="id-cell">{{ product.id }}</td>
             <td>
+              <img
+                v-if="product.image_url"
+                :src="getMediaUrl(product.image_url) || ''"
+                class="product-thumb"
+                alt=""
+              />
+              <span v-else class="no-thumb">—</span>
+            </td>
+            <td>
               <span class="product-name">{{ product.name }}</span>
               <span v-if="product.description" class="product-desc">{{ product.description }}</span>
             </td>
             <td class="price-cell">{{ product.price.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' }) }}</td>
             <td>{{ product.stock }}</td>
+            <td class="muted">{{ product.barcode || '—' }}</td>
             <td>
               <ProductBadge :state="product.state" />
             </td>
             <td v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')">
-              <div class="actions-cell">                
+              <div class="actions-cell">
                 <button v-if="auth.hasPermission('products_update')" class="btn btn-ghost" @click="store.openEditForm(product)">Editar</button>
                 <button v-if="auth.hasPermission('products_delete')" class="btn btn-ghost danger" @click="store.deleteProduct(product.id)">Eliminar</button>
               </div>
@@ -57,4 +70,17 @@ const auth = useAuthStore()
 }
 
 .price-cell { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.product-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.no-thumb {
+  color: var(--text-muted);
+  font-size: 13px;
+}
 </style>

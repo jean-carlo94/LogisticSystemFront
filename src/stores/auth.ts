@@ -6,12 +6,14 @@ import { useProductsStore } from '@/stores/products'
 import { useEventsStore } from '@/stores/events'
 import { useRolesStore } from '@/stores/roles'
 import { useUsersStore } from '@/stores/users'
+import { useShelvesStore } from '@/stores/shelves'
 
 function resetAllStores() {
   useProductsStore().reset()
   useEventsStore().reset()
   useRolesStore().reset()
   useUsersStore().reset()
+  useShelvesStore().reset()
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -81,6 +83,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function uploadAvatar(file: File) {
+    try {
+      user.value = await authService.uploadAvatar(file)
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al subir imagen'
+      throw e
+    }
+  }
+
+  async function deleteAvatar() {
+    try {
+      await authService.deleteAvatar()
+      if (user.value) {
+        user.value = { ...user.value, image_path: null, image_url: null }
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al eliminar imagen'
+      throw e
+    }
+  }
+
   function logout() {
     resetAllStores()
     token.value = null
@@ -117,6 +140,8 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     fetchProfile,
     updateProfile,
+    uploadAvatar,
+    deleteAvatar,
     logout,
     init,
     reset,
