@@ -52,10 +52,12 @@ function formatDate(date: string): string {
               <span v-else class="badge-normal">Usuario</span>
             </td>
             <td class="date-cell">{{ formatDate(user.created_at) }}</td>
-            <td v-if="auth.hasPermission('users_manage')" class="actions-cell">
-              <button class="btn btn-ghost" @click="store.openAssign(user.id)">Asignar rol</button>
-              <button class="btn btn-ghost" @click="store.openEditForm(user)">Editar</button>
-              <button v-if="!user.is_super_admin" class="btn btn-ghost danger" @click="store.deleteUser(user.id)">Eliminar</button>
+            <td v-if="auth.hasPermission('users_manage')">
+              <div class="actions-cell">
+                <button class="btn btn-ghost" @click="store.openAssign(user.id)">Asignar rol</button>
+                <button class="btn btn-ghost" @click="store.openEditForm(user)">Editar</button>
+                <button v-if="!user.is_super_admin" class="btn btn-ghost danger" @click="store.deleteUser(user.id)">Eliminar</button>
+              </div>
             </td>
             <td v-else></td>
           </tr>

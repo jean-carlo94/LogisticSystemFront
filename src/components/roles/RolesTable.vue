@@ -24,10 +24,12 @@ const auth = useAuthStore()
             <td class="id-cell">{{ role.id }}</td>
             <td class="name-cell">{{ role.name }}</td>
             <td class="desc-cell">{{ role.description || '—' }}</td>
-            <td v-if="auth.hasPermission('roles_manage')" class="actions-cell">
-              <button class="btn btn-ghost" @click="store.openPermissions(role.id)">Permisos</button>
-              <button class="btn btn-ghost" @click="store.openEditForm(role)">Editar</button>
-              <button class="btn btn-ghost danger" @click="store.deleteRole(role.id)">Eliminar</button>
+            <td v-if="auth.hasPermission('roles_manage')">
+              <div class="actions-cell">
+                <button class="btn btn-ghost" @click="store.openPermissions(role.id)">Permisos</button>
+                <button class="btn btn-ghost" @click="store.openEditForm(role)">Editar</button>
+                <button class="btn btn-ghost danger" @click="store.deleteRole(role.id)">Eliminar</button>
+              </div>
             </td>
           </tr>
         </tbody>

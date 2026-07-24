@@ -34,9 +34,11 @@ const auth = useAuthStore()
             <td>
               <ProductBadge :state="product.state" />
             </td>
-            <td v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')" class="actions-cell">
-              <button v-if="auth.hasPermission('products_update')" class="btn btn-ghost" @click="store.openEditForm(product)">Editar</button>
-              <button v-if="auth.hasPermission('products_delete')" class="btn btn-ghost danger" @click="store.deleteProduct(product.id)">Eliminar</button>
+            <td v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')">
+              <div class="actions-cell">                
+                <button v-if="auth.hasPermission('products_update')" class="btn btn-ghost" @click="store.openEditForm(product)">Editar</button>
+                <button v-if="auth.hasPermission('products_delete')" class="btn btn-ghost danger" @click="store.deleteProduct(product.id)">Eliminar</button>
+              </div>
             </td>
           </tr>
         </tbody>
