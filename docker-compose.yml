@@ -1,0 +1,17 @@
+services:
+  dev:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+
+  prod:
+    build: .
+    ports:
+      - "80:80"

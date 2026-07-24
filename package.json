@@ -1,0 +1,25 @@
+{
+  "name": "assisprexfront",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc -b --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.18.1",
+    "pinia": "^4.0.2",
+    "vue": "^3.5.39",
+    "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "typescript": "^5.8.3",
+    "vite": "^8.1.1",
+    "vue-tsc": "^3.3.7"
+  }
+}
