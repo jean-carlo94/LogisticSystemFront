@@ -12,6 +12,11 @@ export interface UserAdmin {
   updated_at: string
 }
 
+export interface UserRoleSimple {
+  id: number
+  name: string
+}
+
 export interface UserAdminForm {
   email?: string
   password?: string

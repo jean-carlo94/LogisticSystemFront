@@ -67,6 +67,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updateProfile(data: { first_name?: string; last_name?: string; phone?: string; city?: string; country?: string; password?: string }) {
+    try {
+      user.value = await authService.updateMe(data)
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al actualizar perfil'
+      throw e
+    }
+  }
+
   function logout() {
     resetAllStores()
     token.value = null
@@ -94,6 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     fetchProfile,
+    updateProfile,
     logout,
     init,
   }

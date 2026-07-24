@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useUsersStore } from '@/stores/users'
 
 const store = useUsersStore()
+
+const targetUser = computed(() => store.users.find(u => u.id === store.assignUserId))
+
+const checkedRoleIds = computed(() => store.currentRoles.map(r => r.id))
 </script>
 
 <template>
@@ -9,19 +14,27 @@ const store = useUsersStore()
     <div v-if="store.isAssignOpen" class="overlay" @click.self="store.closeAssign()">
       <div class="modal">
         <h2>Asignar rol</h2>
+        <p v-if="targetUser" class="target-user">
+          Usuario: <strong>{{ targetUser.email }}</strong>
+        </p>
+
         <div class="role-list">
           <label
             v-for="role in store.roles"
             :key="role.id"
             class="role-item"
-            :class="{ selected: store.selectedRoleId === role.id }"
+            :class="{ checked: checkedRoleIds.includes(role.id) }"
           >
             <input
-              type="radio"
-              name="assignRole"
-              :value="role.id"
-              :checked="store.selectedRoleId === role.id"
-              @change="store.selectedRoleId = role.id"
+              type="checkbox"
+              :checked="checkedRoleIds.includes(role.id)"
+              @change="
+                (e) => {
+                  if ((e.target as HTMLInputElement).checked) {
+                    store.saveAssignRole(role.id)
+                  }
+                }
+              "
             />
             <div>
               <strong>{{ role.name }}</strong>
@@ -31,10 +44,7 @@ const store = useUsersStore()
         </div>
         <div v-if="store.roles.length === 0" class="empty-state">Cargando roles...</div>
         <div class="actions">
-          <button class="btn" @click="store.closeAssign()">Cancelar</button>
-          <button class="btn btn-primary" :disabled="!store.selectedRoleId || store.saving" @click="store.saveAssign()">
-            {{ store.saving ? 'Asignando...' : 'Asignar' }}
-          </button>
+          <button class="btn" @click="store.closeAssign()">Cerrar</button>
         </div>
       </div>
     </div>
@@ -63,7 +73,15 @@ const store = useUsersStore()
   box-shadow: var(--shadow-lg);
 }
 
-.modal h2 { margin-bottom: 24px; }
+.modal h2 { margin-bottom: 8px; }
+
+.target-user {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.target-user strong { color: var(--text-primary); }
 
 .empty-state {
   text-align: center;
@@ -75,23 +93,23 @@ const store = useUsersStore()
 .role-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .role-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .role-item:hover { background: var(--bg-hover); }
-.role-item.selected { background: var(--accent-light); }
+.role-item.checked { background: var(--accent-light); }
 
-.role-item input[type='radio'] {
+.role-item input[type='checkbox'] {
   width: auto;
   margin-top: 2px;
   accent-color: var(--accent);

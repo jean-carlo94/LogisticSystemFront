@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { UserAdmin, UserAdminForm } from '@/types/user'
+import type { UserAdmin, UserAdminForm, UserRoleSimple } from '@/types/user'
 import type { Role } from '@/types/role'
 import { usersService } from '@/services/users'
 import { rolesService } from '@/services/roles'
@@ -8,6 +8,7 @@ import { rolesService } from '@/services/roles'
 export const useUsersStore = defineStore('users', () => {
   const users = ref<UserAdmin[]>([])
   const roles = ref<Role[]>([])
+  const currentRoles = ref<UserRoleSimple[]>([])
   const form = ref<UserAdminForm>({})
   const editingId = ref<number | null>(null)
   const isFormOpen = ref(false)
@@ -49,6 +50,14 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  async function fetchUserRoles(userId: number) {
+    try {
+      currentRoles.value = await usersService.getUserRoles(userId)
+    } catch {
+      currentRoles.value = []
+    }
+  }
+
   function goToPage(p: number) {
     page.value = p
     fetchUsers()
@@ -63,6 +72,7 @@ export const useUsersStore = defineStore('users', () => {
   function reset() {
     users.value = []
     roles.value = []
+    currentRoles.value = []
     form.value = {}
     editingId.value = null
     isFormOpen.value = false
@@ -97,6 +107,11 @@ export const useUsersStore = defineStore('users', () => {
       const payload: UserAdminForm = {}
       if (form.value.email) payload.email = form.value.email
       if (form.value.password) payload.password = form.value.password
+      if (form.value.first_name) payload.first_name = form.value.first_name
+      if (form.value.last_name) payload.last_name = form.value.last_name
+      if (form.value.phone) payload.phone = form.value.phone
+      if (form.value.city) payload.city = form.value.city
+      if (form.value.country) payload.country = form.value.country
       if (form.value.is_active !== undefined) payload.is_active = form.value.is_active
 
       await usersService.update(editingId.value, payload)
@@ -136,26 +151,27 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  function openAssign(userId: number) {
+  async function openAssign(userId: number) {
     assignUserId.value = userId
     selectedRoleId.value = null
     isAssignOpen.value = true
-    fetchRoles()
+    await Promise.all([fetchRoles(), fetchUserRoles(userId)])
   }
 
   function closeAssign() {
     isAssignOpen.value = false
     assignUserId.value = null
     selectedRoleId.value = null
+    currentRoles.value = []
   }
 
-  async function saveAssign() {
-    if (assignUserId.value === null || selectedRoleId.value === null) return
+  async function saveAssignRole(roleId: number) {
+    if (assignUserId.value === null) return
     saving.value = true
     error.value = null
     try {
-      await rolesService.assignRole({ user_id: assignUserId.value, role_id: selectedRoleId.value })
-      closeAssign()
+      await usersService.assignUserRole(assignUserId.value, roleId)
+      await fetchUserRoles(assignUserId.value)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al asignar rol'
     } finally {
@@ -166,6 +182,7 @@ export const useUsersStore = defineStore('users', () => {
   return {
     users,
     roles,
+    currentRoles,
     form,
     editingId,
     isFormOpen,
@@ -191,7 +208,7 @@ export const useUsersStore = defineStore('users', () => {
     toggleActive,
     openAssign,
     closeAssign,
-    saveAssign,
+    saveAssignRole,
     reset,
   }
 })

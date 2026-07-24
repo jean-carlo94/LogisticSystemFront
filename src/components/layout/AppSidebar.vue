@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme } from '@/composables/useTheme'
 import { useSidebar } from '@/composables/useSidebar'
+import ProfileModal from './ProfileModal.vue'
 
 const store = useAuthStore()
 const router = useRouter()
 const { theme, toggle: toggleTheme } = useTheme()
 const { collapsed, toggle: toggleSidebar } = useSidebar()
+const isProfileOpen = ref(false)
 
 const links = computed(() => {
   const items = [
@@ -89,10 +91,17 @@ const displayName = computed(() => {
         <span v-if="!collapsed" class="footer-label">{{ theme === 'light' ? 'Claro' : 'Oscuro' }}</span>
       </button>
 
-      <div v-if="store.user && !collapsed" class="user-info">
+      <div v-if="store.user && !collapsed" class="user-info" @click="isProfileOpen = true">
         <span class="user-name">{{ displayName }}</span>
         <span class="user-email">{{ store.user.email }}</span>
       </div>
+
+      <button v-if="store.user && collapsed" class="user-btn" @click="isProfileOpen = true" title="Perfil">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </button>
 
       <button class="logout-btn" @click="logout" title="Salir">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -104,6 +113,8 @@ const displayName = computed(() => {
       </button>
     </div>
   </aside>
+
+  <ProfileModal v-if="isProfileOpen" @close="isProfileOpen = false" />
 </template>
 
 <style scoped>
@@ -215,6 +226,7 @@ const displayName = computed(() => {
 }
 
 .theme-toggle,
+.user-btn,
 .logout-btn {
   display: flex;
   align-items: center;
@@ -238,6 +250,25 @@ const displayName = computed(() => {
   color: var(--text-primary);
 }
 
+.user-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.user-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .logout-btn:hover {
   background: var(--danger-light);
   color: var(--danger);
@@ -246,6 +277,12 @@ const displayName = computed(() => {
 .user-info {
   padding: 4px 12px 8px;
   overflow: hidden;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.user-info:hover {
+  background: var(--bg-hover);
 }
 
 .user-name {
