@@ -16,11 +16,6 @@ export interface RoleForm {
   description: string
 }
 
-export interface AssignRolePayload {
-  user_id: number
-  role_id: number
-}
-
 export interface AssignPermissionsPayload {
   permission_ids: number[]
 }

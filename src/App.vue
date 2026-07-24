@@ -15,7 +15,11 @@ const showSidebar = computed(() => authStore.isAuthenticated && route.name !== '
 <template>
   <AppSidebar v-if="showSidebar" />
   <main :class="{ 'with-sidebar': showSidebar, collapsed }">
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <Transition name="page" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </router-view>
   </main>
 </template>
 

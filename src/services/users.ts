@@ -7,10 +7,6 @@ export const usersService = {
     return api.get('/users/', { params: { page, size } }) as Promise<PaginatedResponse<UserAdmin>>
   },
 
-  async getById(id: number): Promise<UserAdmin> {
-    return api.get(`/users/${id}`) as Promise<UserAdmin>
-  },
-
   async update(id: number, data: UserAdminForm): Promise<UserAdmin> {
     return api.put(`/users/${id}`, data) as Promise<UserAdmin>
   },

@@ -164,7 +164,6 @@ export const useRolesStore = defineStore('roles', () => {
     editingId,
     isFormOpen,
     isPermsOpen,
-    selectedRoleId,
     loading,
     saving,
     error,

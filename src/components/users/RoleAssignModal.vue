@@ -52,29 +52,6 @@ const checkedRoleIds = computed(() => store.currentRoles.map(r => r.id))
 </template>
 
 <style scoped>
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 24px;
-}
-
-.modal {
-  width: 480px;
-  max-width: 100%;
-  padding: 32px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-}
-
-.modal h2 { margin-bottom: 8px; }
-
 .target-user {
   font-size: 13px;
   color: var(--text-secondary);
@@ -82,13 +59,6 @@ const checkedRoleIds = computed(() => store.currentRoles.map(r => r.id))
 }
 
 .target-user strong { color: var(--text-primary); }
-
-.empty-state {
-  text-align: center;
-  padding: 32px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
 
 .role-list {
   display: flex;
@@ -123,11 +93,4 @@ const checkedRoleIds = computed(() => store.currentRoles.map(r => r.id))
 }
 
 .role-item span { font-size: 12px; color: var(--text-muted); }
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
-}
 </style>

@@ -49,17 +49,6 @@ const auth = useAuthStore()
 </template>
 
 <style scoped>
-.table-wrap {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-td { font-size: 14px; }
-
-.id-cell { color: var(--text-muted); font-size: 13px; }
-
 .product-name { display: block; font-weight: 500; }
 
 .product-desc {
@@ -68,16 +57,4 @@ td { font-size: 14px; }
 }
 
 .price-cell { font-weight: 500; font-variant-numeric: tabular-nums; }
-.actions-cell { display: flex; gap: 4px; }
-
-.btn-ghost {
-  padding: 5px 10px; font-size: 13px; border: none; border-radius: var(--radius-sm);
-  background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
-}
-.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
-.btn-ghost.danger:hover { background: var(--danger-light); color: var(--danger); }
-
-@media (max-width: 768px) {
-  .table-wrap { overflow-x: auto; }
-}
 </style>

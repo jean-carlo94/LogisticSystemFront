@@ -22,7 +22,13 @@ onMounted(() => {
       <button v-if="auth.hasPermission('roles_manage')" class="btn btn-primary" @click="store.openCreateForm()">+ Nuevo rol</button>
     </div>
 
-    <div v-if="store.loading && store.roles.length === 0" class="empty-state">Cargando...</div>
+    <div v-if="store.loading && store.roles.length === 0" class="skeleton-table">
+      <div v-for="i in 5" :key="i" class="skeleton-row">
+        <div class="skeleton" style="width: 30px; height: 16px"></div>
+        <div class="skeleton" style="width: 180px; height: 16px"></div>
+        <div class="skeleton" style="width: 260px; height: 16px"></div>
+      </div>
+    </div>
     <div v-else-if="store.error && store.roles.length === 0" class="error-banner">
       <span>{{ store.error }}</span>
       <button class="btn" @click="store.fetchRoles()">Reintentar</button>
@@ -37,30 +43,6 @@ onMounted(() => {
 
 <style scoped>
 .page {
-  flex: 1;
-  padding: 32px;
   max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 28px;
-}
-
-.empty-state { text-align: center; padding: 64px 0; color: var(--text-secondary); }
-
-.error-banner {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 16px; margin-bottom: 16px; border-radius: var(--radius-sm);
-  background: var(--danger-light); border: 1px solid var(--danger);
-  color: var(--danger); font-size: 13px;
-}
-
-@media (max-width: 768px) {
-  .page { padding: 20px 16px; }
 }
 </style>

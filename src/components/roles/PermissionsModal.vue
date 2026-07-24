@@ -4,6 +4,16 @@ import { useAuthStore } from '@/stores/auth'
 
 const store = useRolesStore()
 const auth = useAuthStore()
+
+function togglePermission(permId: number) {
+  const ids = store.rolePermissions.map(p => p.id)
+  if (ids.includes(permId)) {
+    ids.splice(ids.indexOf(permId), 1)
+  } else {
+    ids.push(permId)
+  }
+  store.savePermissions(ids)
+}
 </script>
 
 <template>
@@ -22,15 +32,7 @@ const auth = useAuthStore()
               type="checkbox"
               :checked="store.rolePermissions.some(p => p.id === perm.id)"
               :disabled="!auth.hasPermission('roles_manage')"
-              @change="
-                (e) => {
-                  const target = e.target as HTMLInputElement
-                  const ids = store.rolePermissions.map(p => p.id)
-                  if (target.checked) ids.push(perm.id)
-                  else ids.splice(ids.indexOf(perm.id), 1)
-                  store.savePermissions(ids)
-                }
-              "
+              @change="togglePermission(perm.id)"
             />
             <div class="perm-info">
               <code>{{ perm.code }}</code>
@@ -47,29 +49,6 @@ const auth = useAuthStore()
 </template>
 
 <style scoped>
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 24px;
-}
-
-.modal {
-  width: 480px;
-  max-width: 100%;
-  padding: 32px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-}
-
-.modal h2 { margin-bottom: 24px; }
-
 .perms-list {
   display: flex;
   flex-direction: column;
@@ -112,11 +91,4 @@ const auth = useAuthStore()
 }
 
 .perm-info span { font-size: 12px; color: var(--text-muted); }
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
-}
 </style>

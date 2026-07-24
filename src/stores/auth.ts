@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { User } from '@/types/auth'
+  import type { User, RegisterPayload } from '@/types/auth'
 import { authService } from '@/services/auth'
 import { useProductsStore } from '@/stores/products'
 import { useEventsStore } from '@/stores/events'
@@ -23,6 +23,11 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => token.value !== null)
   const permissions = computed(() => user.value?.permissions ?? [])
   const roles = computed(() => user.value?.roles ?? [])
+  const displayName = computed(() => {
+    const u = user.value
+    if (!u) return ''
+    return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email
+  })
 
   function hasPermission(code: string): boolean {
     if (user.value?.is_super_admin) return true
@@ -46,7 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function register(form: { email: string; password: string }) {
+  async function register(form: RegisterPayload) {
     loading.value = true
     error.value = null
     try {
@@ -91,6 +96,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function reset() {
+    token.value = null
+    user.value = null
+    loading.value = false
+    error.value = null
+  }
+
   return {
     user,
     token,
@@ -99,6 +111,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     permissions,
     roles,
+    displayName,
     hasPermission,
     login,
     register,
@@ -106,5 +119,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateProfile,
     logout,
     init,
+    reset,
   }
 })

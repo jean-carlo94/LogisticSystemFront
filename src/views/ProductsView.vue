@@ -22,12 +22,25 @@ onMounted(() => {
 
     <ProductForm />
 
-    <div v-if="store.loading && store.products.length === 0" class="empty-state">Cargando productos...</div>
+    <div v-if="store.loading && store.products.length === 0" class="skeleton-table">
+      <div v-for="i in 5" :key="i" class="skeleton-row">
+        <div class="skeleton" style="width: 40px; height: 16px"></div>
+        <div class="skeleton" style="width: 180px; height: 16px"></div>
+        <div class="skeleton" style="width: 80px; height: 16px"></div>
+        <div class="skeleton" style="width: 40px; height: 16px"></div>
+        <div class="skeleton" style="width: 70px; height: 22px"></div>
+      </div>
+    </div>
     <div v-else-if="store.error && store.products.length === 0" class="error-banner">
       <span>{{ store.error }}</span>
       <button class="btn" @click="store.fetchProducts()">Reintentar</button>
     </div>
-    <div v-else-if="store.products.length === 0" class="empty-state">No hay productos registrados.</div>
+    <div v-else-if="store.products.length === 0" class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; opacity: 0.3">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+      <p>No hay productos registrados.</p>
+    </div>
     <div v-if="store.error && store.products.length > 0" class="error-banner">
       <span>{{ store.error }}</span>
     </div>
@@ -37,31 +50,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page {
-  flex: 1;
-  padding: 32px;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 28px;
-}
-
-.empty-state { text-align: center; padding: 64px 0; color: var(--text-secondary); font-size: 14px; }
-
-.error-banner {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 16px; margin-bottom: 16px; border-radius: var(--radius-sm);
-  background: var(--danger-light); border: 1px solid var(--danger);
-  color: var(--danger); font-size: 13px;
-}
-
-@media (max-width: 768px) {
-  .page { padding: 20px 16px; }
-}
 </style>

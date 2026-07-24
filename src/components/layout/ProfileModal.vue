@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
@@ -15,12 +15,6 @@ const form = ref({
 })
 const saving = ref(false)
 const localError = ref<string | null>(null)
-
-const displayName = computed(() => {
-  const u = store.user
-  if (!u) return ''
-  return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email
-})
 
 function openEdit() {
   const u = store.user
@@ -72,7 +66,7 @@ async function save() {
           <div class="profile-info">
             <div class="info-row">
               <span class="label">Nombre</span>
-              <span class="value">{{ displayName || '—' }}</span>
+              <span class="value">{{ store.displayName || '—' }}</span>
             </div>
             <div class="info-row">
               <span class="label">Email</span>
@@ -151,29 +145,6 @@ async function save() {
 </template>
 
 <style scoped>
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 24px;
-}
-
-.modal {
-  width: 480px;
-  max-width: 100%;
-  padding: 32px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-}
-
-.modal h2 { margin-bottom: 24px; }
-
 .profile-info {
   display: flex;
   flex-direction: column;
@@ -201,14 +172,6 @@ async function save() {
   word-break: break-word;
 }
 
-.form { display: flex; flex-direction: column; gap: 16px; }
-
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field span { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-
-.row { display: flex; gap: 16px; }
-.row .field { flex: 1; }
-
 .error-msg {
   padding: 10px 14px;
   border-radius: var(--radius-sm);
@@ -216,16 +179,5 @@ async function save() {
   color: var(--danger);
   font-size: 13px;
   border: 1px solid var(--danger);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-@media (max-width: 768px) {
-  .row { flex-direction: column; }
 }
 </style>

@@ -9,12 +9,24 @@ const router = useRouter()
 const isRegister = ref(false)
 const email = ref('')
 const password = ref('')
+const passwordConfirm = ref('')
+const firstName = ref('')
+const lastName = ref('')
+const phone = ref('')
+const city = ref('')
+const country = ref('')
 const successMsg = ref<string | null>(null)
 const modeError = ref<string | null>(null)
 
 function resetForm() {
   email.value = ''
   password.value = ''
+  passwordConfirm.value = ''
+  firstName.value = ''
+  lastName.value = ''
+  phone.value = ''
+  city.value = ''
+  country.value = ''
   modeError.value = null
   successMsg.value = null
 }
@@ -25,7 +37,20 @@ async function submit() {
 
   try {
     if (isRegister.value) {
-      await store.register({ email: email.value, password: password.value })
+      if (password.value !== passwordConfirm.value) {
+        modeError.value = 'Las contraseñas no coinciden'
+        return
+      }
+      await store.register({
+        email: email.value,
+        password: password.value,
+        first_name: firstName.value || undefined,
+        last_name: lastName.value || undefined,
+        phone: phone.value || undefined,
+        city: city.value || undefined,
+        country: country.value || undefined,
+      })
+      resetForm()
       successMsg.value = 'Cuenta creada. Ahora inicia sesion.'
     } else {
       await store.login(email.value, password.value)
@@ -44,11 +69,22 @@ function toggleMode() {
 
 <template>
   <div class="auth-page">
-    <div class="auth-card">
+    <div class="auth-card" :class="{ wide: isRegister }">
       <h1>Logistic System</h1>
       <p class="subtitle">{{ isRegister ? 'Crear cuenta nueva' : 'Ingresa a tu cuenta' }}</p>
 
       <form @submit.prevent="submit" class="auth-form">
+        <div v-if="isRegister" class="row">
+          <label class="field">
+            <span>Nombre</span>
+            <input v-model="firstName" type="text" placeholder="Nombre" />
+          </label>
+          <label class="field">
+            <span>Apellido</span>
+            <input v-model="lastName" type="text" placeholder="Apellido" />
+          </label>
+        </div>
+
         <label class="field">
           <span>Email</span>
           <input v-model="email" type="email" required placeholder="admin@logistica.com" />
@@ -57,6 +93,27 @@ function toggleMode() {
         <label class="field">
           <span>Contraseña</span>
           <input v-model="password" type="password" required minlength="6" maxlength="128" placeholder="Mínimo 6 caracteres" />
+        </label>
+
+        <label v-if="isRegister" class="field">
+          <span>Confirmar contraseña</span>
+          <input v-model="passwordConfirm" type="password" required minlength="6" maxlength="128" placeholder="Repite la contraseña" />
+        </label>
+
+        <div v-if="isRegister" class="row">
+          <label class="field">
+            <span>Teléfono</span>
+            <input v-model="phone" type="text" placeholder="+569..." />
+          </label>
+          <label class="field">
+            <span>Ciudad</span>
+            <input v-model="city" type="text" placeholder="Ciudad" />
+          </label>
+        </div>
+
+        <label v-if="isRegister" class="field">
+          <span>País</span>
+          <input v-model="country" type="text" placeholder="País" />
         </label>
 
         <div v-if="successMsg" class="success-msg">{{ successMsg }}</div>
@@ -94,6 +151,11 @@ function toggleMode() {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
+  transition: width 0.2s ease;
+}
+
+.auth-card.wide {
+  width: 500px;
 }
 
 .auth-card h1 {
@@ -124,6 +186,15 @@ function toggleMode() {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.row .field {
+  flex: 1;
 }
 
 .error-msg {
@@ -169,5 +240,10 @@ function toggleMode() {
 
 .link-btn:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .row { flex-direction: column; }
+  .auth-card.wide { width: 380px; }
 }
 </style>

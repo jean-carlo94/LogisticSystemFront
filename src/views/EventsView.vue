@@ -22,12 +22,27 @@ onMounted(() => {
       <h1>Log de eventos</h1>
     </div>
 
-    <div v-if="store.loading && store.events.length === 0" class="empty-state">Cargando eventos...</div>
+    <div v-if="store.loading && store.events.length === 0" class="skeleton-table">
+      <div v-for="i in 5" :key="i" class="skeleton-row">
+        <div class="skeleton" style="width: 30px; height: 16px"></div>
+        <div class="skeleton" style="width: 120px; height: 16px"></div>
+        <div class="skeleton" style="width: 100px; height: 22px"></div>
+        <div class="skeleton" style="width: 240px; height: 16px"></div>
+        <div class="skeleton" style="width: 40px; height: 16px"></div>
+        <div class="skeleton" style="width: 140px; height: 16px"></div>
+      </div>
+    </div>
     <div v-else-if="store.error && store.events.length === 0" class="error-banner">
       <span>{{ store.error }}</span>
       <button class="btn" @click="store.fetchEvents()">Reintentar</button>
     </div>
-    <div v-else-if="store.events.length === 0" class="empty-state">No hay eventos registrados.</div>
+    <div v-else-if="store.events.length === 0" class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; opacity: 0.3">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <p>No hay eventos registrados.</p>
+    </div>
     <div v-if="store.error && store.events.length > 0" class="error-banner">
       <span>{{ store.error }}</span>
     </div>
@@ -37,31 +52,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page {
-  flex: 1;
-  padding: 32px;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 28px;
-}
-
-.empty-state { text-align: center; padding: 64px 0; color: var(--text-secondary); font-size: 14px; }
-
-.error-banner {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 16px; margin-bottom: 16px; border-radius: var(--radius-sm);
-  background: var(--danger-light); border: 1px solid var(--danger);
-  color: var(--danger); font-size: 13px;
-}
-
-@media (max-width: 768px) {
-  .page { padding: 20px 16px; }
-}
 </style>

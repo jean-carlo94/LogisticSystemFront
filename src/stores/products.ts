@@ -19,7 +19,6 @@ export const useProductsStore = defineStore('products', () => {
   const pages = ref(0)
 
   const isEditing = computed(() => editingId.value !== null)
-  const productCount = computed(() => total.value)
 
   async function fetchProducts() {
     loading.value = true
@@ -141,7 +140,6 @@ export const useProductsStore = defineStore('products', () => {
     total,
     pages,
     isEditing,
-    productCount,
     fetchProducts,
     goToPage,
     setSize,

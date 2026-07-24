@@ -26,12 +26,6 @@ function logout() {
   store.logout()
   router.push('/auth')
 }
-
-const displayName = computed(() => {
-  const u = store.user
-  if (!u) return ''
-  return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email
-})
 </script>
 
 <template>
@@ -92,7 +86,7 @@ const displayName = computed(() => {
       </button>
 
       <div v-if="store.user && !collapsed" class="user-info" @click="isProfileOpen = true">
-        <span class="user-name">{{ displayName }}</span>
+        <span class="user-name">{{ store.displayName }}</span>
         <span class="user-email">{{ store.user.email }}</span>
       </div>
 
@@ -144,6 +138,14 @@ const displayName = computed(() => {
   padding: 16px;
   height: 56px;
   border-bottom: 1px solid var(--border);
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 16px 10px;
+}
+
+.sidebar.collapsed .brand {
+  overflow: visible;
 }
 
 .brand {

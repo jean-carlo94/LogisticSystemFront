@@ -33,7 +33,7 @@ api.interceptors.response.use(
 
     const data = error.response?.data as Record<string, string> | undefined
     const message =
-      data?.message || data?.detail ||
+      data?.detail || data?.message ||
       error.message ||
       'Error de conexion'
 
