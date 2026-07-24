@@ -4,7 +4,6 @@ import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsTable from '@/components/products/ProductsTable.vue'
-import Pagination from '@/components/ui/Pagination.vue'
 
 const store = useProductsStore()
 const auth = useAuthStore()
@@ -23,33 +22,17 @@ onMounted(() => {
 
     <ProductForm />
 
-    <div v-if="store.loading && store.products.length === 0" class="empty-state">
-      <p>Cargando productos...</p>
-    </div>
-
+    <div v-if="store.loading && store.products.length === 0" class="empty-state">Cargando productos...</div>
     <div v-else-if="store.error && store.products.length === 0" class="error-banner">
       <span>{{ store.error }}</span>
       <button class="btn" @click="store.fetchProducts()">Reintentar</button>
     </div>
-
-    <div v-else-if="store.products.length === 0" class="empty-state">
-      <p>No hay productos registrados.</p>
-    </div>
-
+    <div v-else-if="store.products.length === 0" class="empty-state">No hay productos registrados.</div>
     <div v-if="store.error && store.products.length > 0" class="error-banner">
       <span>{{ store.error }}</span>
     </div>
 
     <ProductsTable />
-
-    <Pagination
-      :page="store.page"
-      :pages="store.pages"
-      :total="store.total"
-      :size="store.size"
-      @change="store.goToPage"
-      @resize="store.setSize"
-    />
   </div>
 </template>
 
@@ -69,29 +52,16 @@ onMounted(() => {
   margin-bottom: 28px;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 64px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
+.empty-state { text-align: center; padding: 64px 0; color: var(--text-secondary); font-size: 14px; }
 
 .error-banner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  margin-bottom: 16px;
-  border-radius: var(--radius-sm);
-  background: var(--danger-light);
-  border: 1px solid var(--danger);
-  color: var(--danger);
-  font-size: 13px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 16px; margin-bottom: 16px; border-radius: var(--radius-sm);
+  background: var(--danger-light); border: 1px solid var(--danger);
+  color: var(--danger); font-size: 13px;
 }
 
 @media (max-width: 768px) {
-  .page {
-    padding: 20px 16px;
-  }
+  .page { padding: 20px 16px; }
 }
 </style>
