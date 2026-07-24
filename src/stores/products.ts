@@ -42,6 +42,12 @@ export const useProductsStore = defineStore('products', () => {
     fetchProducts()
   }
 
+  function setSize(s: number) {
+    size.value = s
+    page.value = 1
+    fetchProducts()
+  }
+
   function openCreateForm() {
     form.value = createEmptyProduct()
     editingId.value = null
@@ -109,6 +115,19 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  function reset() {
+    products.value = []
+    form.value = createEmptyProduct()
+    editingId.value = null
+    isFormOpen.value = false
+    loading.value = false
+    error.value = null
+    saving.value = false
+    page.value = 1
+    total.value = 0
+    pages.value = 0
+  }
+
   return {
     products,
     form,
@@ -125,10 +144,12 @@ export const useProductsStore = defineStore('products', () => {
     productCount,
     fetchProducts,
     goToPage,
+    setSize,
     openCreateForm,
     openEditForm,
     closeForm,
     saveProduct,
     deleteProduct,
+    reset,
   }
 })

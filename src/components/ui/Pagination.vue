@@ -3,13 +3,17 @@ const props = defineProps<{
   page: number
   pages: number
   total: number
+  size: number
 }>()
 
 const emit = defineEmits<{
   (e: 'change', page: number): void
+  (e: 'resize', size: number): void
 }>()
 
-const visiblePages = (): (number | '...')[] => {
+const sizes = [10, 20, 50, 100]
+
+function visiblePages(): (number | '...')[] {
   const result: (number | '...')[] = []
   const p = props.pages
 
@@ -19,16 +23,13 @@ const visiblePages = (): (number | '...')[] => {
   }
 
   result.push(1)
-
   if (props.page > 3) result.push('...')
 
   const start = Math.max(2, props.page - 1)
   const end = Math.min(p - 1, props.page + 1)
-
   for (let i = start; i <= end; i++) result.push(i)
 
   if (props.page < p - 2) result.push('...')
-
   result.push(p)
 
   return result
@@ -36,37 +37,23 @@ const visiblePages = (): (number | '...')[] => {
 </script>
 
 <template>
-  <div v-if="pages > 1" class="pagination">
-    <span class="pagination-info">{{ total }} registros</span>
+  <div v-if="pages > 1 || total > 0" class="pagination">
+    <div class="size-selector">
+      <select :value="size" @change="emit('resize', Number(($event.target as HTMLSelectElement).value))">
+        <option v-for="s in sizes" :key="s" :value="s">{{ s }}</option>
+      </select>
+      <span class="info">{{ total }} registros</span>
+    </div>
 
-    <div class="pagination-buttons">
-      <button
-        class="page-btn"
-        :disabled="page === 1"
-        @click="emit('change', page - 1)"
-      >
-        &laquo;
-      </button>
+    <div class="buttons">
+      <button class="page-btn" :disabled="page === 1" @click="emit('change', page - 1)">&laquo;</button>
 
       <template v-for="p in visiblePages()" :key="p">
-        <span v-if="p === '...'" class="page-ellipsis">...</span>
-        <button
-          v-else
-          class="page-btn"
-          :class="{ active: p === page }"
-          @click="emit('change', p)"
-        >
-          {{ p }}
-        </button>
+        <span v-if="p === '...'" class="dots">...</span>
+        <button v-else class="page-btn" :class="{ active: p === page }" @click="emit('change', p)">{{ p }}</button>
       </template>
 
-      <button
-        class="page-btn"
-        :disabled="page === pages"
-        @click="emit('change', page + 1)"
-      >
-        &raquo;
-      </button>
+      <button class="page-btn" :disabled="page === pages" @click="emit('change', page + 1)">&raquo;</button>
     </div>
   </div>
 </template>
@@ -77,49 +64,74 @@ const visiblePages = (): (number | '...')[] => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 0;
-  flex-wrap: wrap;
   gap: 12px;
 }
 
-.pagination-info {
-  font-size: 14px;
-  color: var(--text);
+.size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.pagination-buttons {
+.size-selector select {
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.buttons {
   display: flex;
   gap: 4px;
 }
 
 .page-btn {
-  font-family: inherit;
-  font-size: 14px;
-  padding: 6px 12px;
-  border-radius: 6px;
+  min-width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-h);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: all 0.15s;
 }
 
-.page-btn:hover:not(:disabled) {
-  border-color: var(--accent-border);
+.page-btn:hover:not(:disabled):not(.active) {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
 }
 
 .page-btn.active {
   background: var(--accent);
-  color: #fff;
   border-color: var(--accent);
+  color: #fff;
 }
 
 .page-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
-.page-ellipsis {
-  padding: 6px 4px;
-  color: var(--text);
+.dots {
+  width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 </style>

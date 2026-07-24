@@ -1,149 +1,113 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
+import { useAuthStore } from '@/stores/auth'
 import ProductBadge from './ProductBadge.vue'
 
 const store = useProductsStore()
-const router = useRouter()
-
-function viewEvents(productId: number) {
-  router.push({ name: 'events', query: { product_id: String(productId) } })
-}
+const auth = useAuthStore()
 </script>
 
 <template>
-  <table v-if="store.products.length > 0" class="products-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Nombre</th>
-        <th>Precio</th>
-        <th>Stock</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="product in store.products" :key="product.id">
-        <td>{{ product.id }}</td>
-        <td>
-          <strong>{{ product.name }}</strong>
-          <small v-if="product.description">{{ product.description }}</small>
-        </td>
-        <td>{{ product.price.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' }) }}</td>
-        <td>{{ product.stock }}</td>
-        <td>
-          <ProductBadge :state="product.state" />
-        </td>
-        <td>
-          <div class="actions">
-            <button class="btn btn-sm btn-log" @click="viewEvents(product.id)">Log</button>
-            <button class="btn btn-sm btn-edit" @click="store.openEditForm(product)">Editar</button>
-            <button class="btn btn-sm btn-danger" @click="store.deleteProduct(product.id)">Eliminar</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div v-if="store.products.length > 0" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="product in store.products" :key="product.id">
+          <td class="id-cell">{{ product.id }}</td>
+          <td>
+            <span class="product-name">{{ product.name }}</span>
+            <span v-if="product.description" class="product-desc">{{ product.description }}</span>
+          </td>
+          <td class="price-cell">{{ product.price.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' }) }}</td>
+          <td>{{ product.stock }}</td>
+          <td>
+            <ProductBadge :state="product.state" />
+          </td>
+          <td class="actions-cell" v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')">
+            <button v-if="auth.hasPermission('products_update')" class="btn btn-ghost" @click="store.openEditForm(product)">Editar</button>
+            <button v-if="auth.hasPermission('products_delete')" class="btn btn-ghost danger" @click="store.deleteProduct(product.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>
-.products-table {
-  width: 100%;
-  border-collapse: collapse;
+.table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
-.products-table th,
-.products-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
+td {
+  font-size: 14px;
 }
 
-.products-table th {
-  text-align: left;
+.id-cell {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.product-name {
+  display: block;
   font-weight: 500;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text);
 }
 
-.products-table td strong {
+.product-desc {
   display: block;
-  color: var(--text-h);
-}
-
-.products-table td small {
-  display: block;
-  font-size: 13px;
-  color: var(--text);
-  margin-top: 4px;
-  max-width: 300px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.actions {
+.price-cell {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions-cell {
   display: flex;
-  flex-direction: row;
-  gap: 8px;
+  gap: 4px;
 }
 
-.btn {
-  font-family: inherit;
-  font-size: 15px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  background: var(--bg);
-  color: var(--text-h);
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.btn:hover {
-  border-color: var(--accent-border);
-}
-
-.btn-sm {
-  padding: 6px 14px;
+.btn-ghost {
+  padding: 5px 10px;
   font-size: 13px;
-}
-
-.btn-edit:hover {
-  color: var(--accent);
-}
-
-.btn-log {
-  color: #3b82f6;
-  border-color: #3b82f6;
+  border: none;
+  border-radius: var(--radius-sm);
   background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.15s;
 }
 
-.btn-log:hover {
-  background: #3b82f6;
-  color: #fff;
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
-.btn-danger {
-  color: #ef4444;
-  border-color: #ef4444;
-  background: transparent;
-}
-
-.btn-danger:hover {
-  background: #ef4444;
-  color: #fff;
+.btn-ghost.danger:hover {
+  background: var(--danger-light);
+  color: var(--danger);
 }
 
 @media (max-width: 768px) {
-  .products-table th:nth-child(4),
-  .products-table td:nth-child(4),
-  .products-table th:nth-child(5),
-  .products-table td:nth-child(5) {
-    display: none;
+  .table-wrap {
+    overflow-x: auto;
   }
 }
 </style>

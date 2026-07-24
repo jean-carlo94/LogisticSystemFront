@@ -9,13 +9,31 @@ const api: AxiosInstance = axios.create({
   },
 })
 
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response.data
   },
   (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('access_token')
+      window.location.href = '/auth'
+      return Promise.reject(new Error('Sesion expirada'))
+    }
+
+    const data = error.response?.data as Record<string, string> | undefined
     const message =
-      (error.response?.data as { message?: string })?.message ||
+      data?.message || data?.detail ||
       error.message ||
       'Error de conexion'
 

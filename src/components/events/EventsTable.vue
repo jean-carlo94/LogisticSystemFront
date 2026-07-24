@@ -4,11 +4,11 @@ import EventBadge from './EventBadge.vue'
 
 const store = useEventsStore()
 
-const formatDate = (date: string): string => {
+function formatDate(date: string): string {
   return new Date(date).toLocaleString('es-PE')
 }
 
-const prettyJson = (raw: string): string => {
+function prettyJson(raw: string): string {
   try {
     return JSON.stringify(JSON.parse(raw), null, 2)
   } catch {
@@ -18,71 +18,69 @@ const prettyJson = (raw: string): string => {
 </script>
 
 <template>
-  <table v-if="store.events.length > 0" class="events-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Producto</th>
-        <th>Acci&oacute;n</th>
-        <th>Datos</th>
-        <th>Fecha</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="event in store.events" :key="event.id">
-        <td>{{ event.id }}</td>
-        <td>#{{ event.product_id }}</td>
-        <td>
-          <EventBadge :action="event.action" />
-        </td>
-        <td class="details-cell">
-          <pre>{{ prettyJson(event.description) }}</pre>
-        </td>
-        <td>{{ formatDate(event.create_at) }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div v-if="store.events.length > 0" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Entidad</th>
+          <th>Acción</th>
+          <th>Datos</th>
+          <th>Usuario</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="event in store.events" :key="event.id">
+          <td class="id-cell">{{ event.id }}</td>
+          <td>{{ event.entity_type }} #{{ event.entity_id }}</td>
+          <td><EventBadge :action="event.action" /></td>
+          <td class="json-cell"><pre>{{ prettyJson(event.description) }}</pre></td>
+          <td class="id-cell">#{{ event.user_id }}</td>
+          <td class="date-cell">{{ formatDate(event.create_at) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>
-.events-table {
-  width: 100%;
-  border-collapse: collapse;
+.table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
-.events-table th,
-.events-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-
-.events-table th {
-  text-align: left;
-  font-weight: 500;
+.id-cell {
   font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text);
+  color: var(--text-muted);
+}
+
+.date-cell {
+  font-size: 13px;
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
-.events-table td {
-  font-size: 14px;
-}
-
-.details-cell pre {
+.json-cell pre {
   margin: 0;
   padding: 8px 12px;
-  background: var(--code-bg);
-  border-radius: 6px;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 13px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12px;
   line-height: 1.5;
-  color: var(--text-h);
+  color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: 200px;
+  max-height: 160px;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .table-wrap {
+    overflow-x: auto;
+  }
 }
 </style>

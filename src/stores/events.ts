@@ -44,6 +44,22 @@ export const useEventsStore = defineStore('events', () => {
     fetchEvents()
   }
 
+  function setSize(s: number) {
+    size.value = s
+    page.value = 1
+    fetchEvents()
+  }
+
+  function reset() {
+    events.value = []
+    loading.value = false
+    error.value = null
+    page.value = 1
+    total.value = 0
+    pages.value = 0
+    productFilterId.value = null
+  }
+
   return {
     events,
     loading,
@@ -55,5 +71,7 @@ export const useEventsStore = defineStore('events', () => {
     setProductFilter,
     fetchEvents,
     goToPage,
+    setSize,
+    reset,
   }
 })

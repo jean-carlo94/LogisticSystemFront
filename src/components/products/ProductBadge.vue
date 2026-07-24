@@ -14,35 +14,35 @@ const labels: Record<ProductState, string> = {
 </script>
 
 <template>
-  <span :class="['badge', `badge-${state.toLowerCase()}`]">{{ labels[state] }}</span>
+  <span :class="['badge', state.toLowerCase()]">{{ labels[state] }}</span>
 </template>
 
 <style scoped>
 .badge {
   display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.badge-active {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+.active {
+  background: var(--success-light);
+  color: var(--success);
 }
 
-.badge-inactive {
-  background: rgba(156, 163, 175, 0.15);
-  color: #6b7280;
+.inactive {
+  background: var(--bg-hover);
+  color: var(--text-muted);
 }
 
-.badge-no_stock {
-  background: rgba(251, 191, 36, 0.15);
-  color: #d97706;
+.no_stock {
+  background: var(--warning-light);
+  color: var(--warning);
 }
 
-.badge-discontinued {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+.discontinued {
+  background: var(--danger-light);
+  color: var(--danger);
 }
 </style>

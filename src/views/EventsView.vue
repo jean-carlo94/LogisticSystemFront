@@ -18,22 +18,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="events-page">
-    <header class="page-header">
+  <div class="page">
+    <div class="page-header">
       <h1>Log de eventos</h1>
-    </header>
+    </div>
 
-    <div v-if="store.loading" class="empty-state">
+    <div v-if="store.loading && store.events.length === 0" class="empty-state">
       <p>Cargando eventos...</p>
     </div>
 
-    <div v-else-if="store.error" class="error-banner">
-      <p>{{ store.error }}</p>
-      <button class="btn btn-sm" @click="store.fetchEvents()">Reintentar</button>
+    <div v-else-if="store.error && store.events.length === 0" class="error-banner">
+      <span>{{ store.error }}</span>
+      <button class="btn" @click="store.fetchEvents()">Reintentar</button>
     </div>
 
     <div v-else-if="store.events.length === 0" class="empty-state">
       <p>No hay eventos registrados.</p>
+    </div>
+
+    <div v-if="store.error && store.events.length > 0" class="error-banner">
+      <span>{{ store.error }}</span>
     </div>
 
     <EventsTable />
@@ -42,80 +46,52 @@ onMounted(() => {
       :page="store.page"
       :pages="store.pages"
       :total="store.total"
+      :size="store.size"
       @change="store.goToPage"
+      @resize="store.setSize"
     />
   </div>
 </template>
 
 <style scoped>
-.events-page {
-  width: 100%;
+.page {
+  flex: 1;
   padding: 32px;
-  text-align: left;
-  box-sizing: border-box;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 32px;
+  margin-bottom: 28px;
 }
 
 .empty-state {
   text-align: center;
   padding: 64px 0;
-  color: var(--text);
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .error-banner {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-}
-
-.error-banner p {
-  color: #ef4444;
-  margin: 0;
-}
-
-.btn {
-  font-family: inherit;
-  font-size: 15px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  background: var(--bg);
-  color: var(--text-h);
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.btn:hover {
-  border-color: var(--accent-border);
-}
-
-.btn-sm {
-  padding: 6px 14px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-light);
+  border: 1px solid var(--danger);
+  color: var(--danger);
   font-size: 13px;
 }
 
 @media (max-width: 768px) {
-  .events-page {
-    padding: 20px;
+  .page {
+    padding: 20px 16px;
   }
 }
 </style>

@@ -1,4 +1,4 @@
-# AssisPrexFront
+# Logistic System Front
 
 CRUD de productos con registro de eventos. Vue 3 + TypeScript + Pinia + Vue Router + Axios.
 
