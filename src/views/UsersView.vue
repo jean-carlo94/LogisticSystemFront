@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import UsersTable from '@/components/users/UsersTable.vue'
 import UserFormModal from '@/components/users/UserFormModal.vue'
@@ -17,7 +17,7 @@ const fSuper = ref(store.filterParams.is_super_admin ?? '')
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-watch([fEmail, fFirst, fLast, fCity, fCountry, fActive, fSuper], () => {
+const unwatch = watch([fEmail, fFirst, fLast, fCity, fCountry, fActive, fSuper], () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     if (hasFilters()) {
@@ -26,6 +26,11 @@ watch([fEmail, fFirst, fLast, fCity, fCountry, fActive, fSuper], () => {
       store.setFilter({})
     }
   }, 400)
+})
+
+onUnmounted(() => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  unwatch()
 })
 
 function doFilter() {

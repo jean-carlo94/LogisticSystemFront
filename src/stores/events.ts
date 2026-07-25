@@ -81,6 +81,7 @@ export const useEventsStore = defineStore('events', () => {
     total,
     pages,
     filterParams,
+    productFilterId,
     setProductFilter,
     setFilter,
     fetchEvents,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useEventsStore } from '@/stores/events'
 import EventsTable from '@/components/events/EventsTable.vue'
@@ -15,7 +15,7 @@ const fEntityId = ref(store.filterParams.entity_id ?? '')
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-watch([fAction, fEntityType, fUserId, fEntityId], () => {
+const unwatch = watch([fAction, fEntityType, fUserId, fEntityId], () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     if (hasFilters()) {
@@ -24,6 +24,11 @@ watch([fAction, fEntityType, fUserId, fEntityId], () => {
       store.setFilter({})
     }
   }, 400)
+})
+
+onUnmounted(() => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  unwatch()
 })
 
 function doFilter() {

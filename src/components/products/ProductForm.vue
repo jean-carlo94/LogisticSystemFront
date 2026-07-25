@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, useTemplateRef } from 'vue'
 import { useProductsStore } from '@/stores/products'
 import { ProductState } from '@/types/product'
 import { getMediaUrl } from '@/composables/useFormat'
@@ -23,7 +23,7 @@ const currentImageUrl = computed(() => {
   return product?.image_url ?? null
 })
 
-const fileInput = ref<HTMLInputElement | null>(null)
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 
 function handleFile(file: File) {
   if (!file.type.startsWith('image/')) return
@@ -60,7 +60,7 @@ async function submitForm() {
 <template>
   <Transition name="fade">
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
-      <div class="modal" style="width: 560px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal product-form-modal">
         <h2>{{ store.isEditing ? 'Editar producto' : 'Nuevo producto' }}</h2>
 
         <form @submit.prevent="submitForm()" class="form">
@@ -246,5 +246,11 @@ async function submitForm() {
   border-color: var(--accent);
   background: var(--accent-light);
   color: var(--accent);
+}
+
+.product-form-modal {
+  width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 </style>

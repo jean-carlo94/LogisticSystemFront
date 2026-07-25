@@ -36,6 +36,7 @@ src/
   components/
     layout/          AppSidebar.vue, ProfileModal.vue
     products/        ProductBadge.vue, ProductForm.vue (modal), ProductsTable.vue (table + pagination)
+    shelves/         ShelfCard.vue, ShelvesGrid.vue (grid + pagination), ShelfFormModal.vue, ShelfDetailModal.vue, ProductPalette.vue
     events/          EventBadge.vue, EventsTable.vue (table + pagination)
     roles/           RoleFormModal.vue, PermissionsModal.vue, RolesTable.vue (table + pagination)
     users/           UserFormModal.vue, RoleAssignModal.vue, UsersTable.vue (table + pagination)
@@ -110,6 +111,8 @@ Every store exports:
 - Modal state: `isFormOpen`, `isXxxOpen`, `editingId`, `form` refs
 - `loading`, `saving`, `error` for async state
 
+**CRITICAL: Every reactive value (`ref`, `computed`, `reactive`) declared inside a setup store MUST be returned from the setup function.** Values not returned are invisible to DevTools, SSR, and Pinia plugins. If you need "private" state, use a naming convention (`_name`) instead of omitting it from the return.
+
 ### Permission gating
 
 Use `auth.hasPermission('code')` to conditionally show buttons and table columns. Permission codes: `products_create`, `products_read`, `products_update`, `products_delete`, `events_read`, `roles_manage`, `users_manage`. Super admins bypass all checks.
@@ -177,3 +180,105 @@ Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
 - `DELETE /users/{id}` — delete [users_manage]
 - `GET /users/{id}/roles` — user's roles [users_manage]
 - `POST /users/{id}/roles` — assign role `{ role_id: N }` [users_manage]
+
+## Gotchas / Guardrails
+
+Rules discovered via audit. Violations cause bugs, memory leaks, or broken SSR/DevTools. Follow these on every new component and store.
+
+### 1. Stor-level timers MUST be cleaned in reset()
+
+Any `setTimeout`/`setInterval` in a store must be stored in a variable and cleared in `reset()`.
+
+```ts
+// Correct
+let _timer: ReturnType<typeof setTimeout> | null = null
+
+function someAction() {
+  _timer = setTimeout(() => { ... }, 2000)
+}
+
+function reset() {
+  if (_timer) clearTimeout(_timer)
+  _timer = null
+}
+```
+
+### 2. Components MUST cleanup timers + watchers in onUnmounted
+
+All `setTimeout`, `setInterval`, and `watch()` must be stored and cleaned up.
+
+```ts
+// Correct
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+const unwatch = watch(source, () => { ... })
+
+onUnmounted(() => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  unwatch()
+})
+```
+
+### 3. Use useTemplateRef() for template refs (Vue 3.5+)
+
+```ts
+// Correct (Vue 3.5+)
+import { useTemplateRef } from 'vue'
+const input = useTemplateRef<HTMLInputElement>('myInput')
+
+// Wrong
+const input = ref<HTMLInputElement | null>(null)
+```
+
+### 4. No inline complex expressions in templates
+
+Move `.filter()`, `.map()`, `.find()`, `.toLocaleString()`, `.join()` chains to `computed` or helper functions.
+
+```vue
+<!-- Wrong -->
+<span>{{ store.user?.roles?.map(r => r.name).join(', ') || '—' }}</span>
+<span>{{ product.price.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' }) }}</span>
+
+<!-- Correct -->
+<span>{{ roleNames }}</span>
+<span>{{ formatCurrency(product.price) }}</span>
+```
+
+### 5. CSS classes over inline styles for layout
+
+No `style="width: 560px; max-height: 90vh"` on modals. Use CSS classes.
+
+```vue
+<!-- Wrong -->
+<div class="modal" style="width: 560px; max-height: 90vh;">
+
+<!-- Correct -->
+<div class="modal product-form-modal">
+```
+
+### 6. Computed must be pure
+
+No side effects (mutations, API calls, emit, storage writes) inside `computed()`. Use `watch()` for side effects.
+
+```ts
+// Wrong — side effect in computed
+const doubled = computed(() => {
+  if (count.value > 10) api.log(count.value) // side effect!
+  return count.value * 2
+})
+
+// Correct
+const doubled = computed(() => count.value * 2)
+watch(doubled, (v) => { if (v > 20) api.log(v) })
+```
+
+### 7. Auto-filters: debounce + cleanup pattern
+
+Every filter bar with text input needs a debounced watcher with `onUnmounted` cleanup. The debounce timer and unwatcher must be stored.
+
+### 8. Store reset must clear ALL state
+
+Every `ref`, `computed` dependency state, timer, and reactive value must be reset to its initial value in the store's `reset()` method. This is called on logout by `resetAllStores()`.
+
+### 9. Error state must be cleared on close
+
+All `closeForm()`, `closeDetail()`, `closeAssign()`, `closePermissions()` methods must set `error.value = null` to prevent stuck error banners.

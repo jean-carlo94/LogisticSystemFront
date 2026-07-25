@@ -239,6 +239,7 @@ export const useUsersStore = defineStore('users', () => {
     isFormOpen,
     isAssignOpen,
     assignUserId,
+    selectedRoleId,
     loading,
     saving,
     error,

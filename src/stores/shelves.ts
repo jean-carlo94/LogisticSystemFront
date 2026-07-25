@@ -43,6 +43,7 @@ export const useShelvesStore = defineStore('shelves', () => {
   const paletteError = ref<string | null>(null)
 
   const dropFeedback = ref<string | null>(null)
+  let feedbackTimer: ReturnType<typeof setTimeout> | null = null
 
   const isEditing = computed(() => editingId.value !== null)
 
@@ -196,7 +197,8 @@ export const useShelvesStore = defineStore('shelves', () => {
       await shelvesService.addItem(shelfId, { product_id: productId, quantity })
       dropFeedback.value = `${productName} ×${quantity} asignado`
       await refreshDetail(shelfId)
-      setTimeout(() => {
+      if (feedbackTimer) clearTimeout(feedbackTimer)
+      feedbackTimer = setTimeout(() => {
         if (dropFeedback.value === `${productName} ×${quantity} asignado`) {
           dropFeedback.value = null
         }
@@ -291,6 +293,8 @@ export const useShelvesStore = defineStore('shelves', () => {
     paletteLoading.value = false
     paletteError.value = null
     dropFeedback.value = null
+    if (feedbackTimer) clearTimeout(feedbackTimer)
+    feedbackTimer = null
   }
 
   return {

@@ -5,7 +5,7 @@ import { useShelvesStore } from '@/stores/shelves'
 import { useRouter } from 'vue-router'
 import ProductBadge from './ProductBadge.vue'
 import Pagination from '@/components/ui/Pagination.vue'
-import { getMediaUrl } from '@/composables/useFormat'
+import { getMediaUrl, formatCurrency } from '@/composables/useFormat'
 
 const store = useProductsStore()
 const auth = useAuthStore()
@@ -53,7 +53,7 @@ function openShelf(shelfId: number) {
               <span class="product-name">{{ product.name }}</span>
               <span v-if="product.description" class="product-desc">{{ product.description }}</span>
             </td>
-            <td class="price-cell">{{ product.price.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' }) }}</td>
+            <td class="price-cell">{{ formatCurrency(product.price) }}</td>
             <td>{{ product.stock }}</td>
             <td class="muted">{{ product.barcode || '—' }}</td>
             <td>

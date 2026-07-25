@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, useTemplateRef } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getMediaUrl } from '@/composables/useFormat'
 
@@ -20,7 +20,7 @@ const localError = ref<string | null>(null)
 const avatarFile = ref<File | null>(null)
 const avatarPreview = ref<string | null>(null)
 const dropActive = ref(false)
-const fileInput = ref<HTMLInputElement | null>(null)
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 
 const avatarSrc = computed(() => {
   if (avatarPreview.value) return avatarPreview.value
@@ -32,6 +32,8 @@ const avatarInitial = computed(() => {
   const name = [store.user.first_name, store.user.last_name].filter(Boolean).join(' ') || store.user.email
   return name.charAt(0).toUpperCase()
 })
+
+const roleNames = computed(() => store.user?.roles?.map(r => r.name).join(', ') || '—')
 
 function openEdit() {
   const u = store.user
@@ -139,7 +141,7 @@ async function removeAvatar() {
             </div>
             <div class="info-row">
               <span class="label">Roles</span>
-              <span class="value">{{ store.user?.roles?.map(r => r.name).join(', ') || '—' }}</span>
+              <span class="value">{{ roleNames }}</span>
             </div>
           </div>
 

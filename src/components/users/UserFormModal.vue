@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import { getMediaUrl } from '@/composables/useFormat'
 
@@ -8,7 +8,7 @@ const store = useUsersStore()
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const dropActive = ref(false)
-const fileInput = ref<HTMLInputElement | null>(null)
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 
 function handleFile(file: File) {
   if (!file.type.startsWith('image/')) return
@@ -51,7 +51,7 @@ async function submitForm() {
 <template>
   <Transition name="fade">
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
-      <div class="modal" style="width: 540px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal user-form-modal">
         <h2>Editar usuario</h2>
         <form @submit.prevent="submitForm()" class="form">
           <div class="row">
@@ -186,5 +186,11 @@ async function submitForm() {
   border-color: var(--accent);
   background: var(--accent-light);
   color: var(--accent);
+}
+
+.user-form-modal {
+  width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 </style>

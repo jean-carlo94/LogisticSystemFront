@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
@@ -20,7 +20,7 @@ const fStock = ref(store.filterParams.stock ?? '')
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-watch([fName, fBarcode, fState, fStock], () => {
+const unwatch = watch([fName, fBarcode, fState, fStock], () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     if (hasFilters()) {
@@ -29,6 +29,11 @@ watch([fName, fBarcode, fState, fStock], () => {
       store.setFilter({})
     }
   }, 400)
+})
+
+onUnmounted(() => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  unwatch()
 })
 
 function doFilter() {
