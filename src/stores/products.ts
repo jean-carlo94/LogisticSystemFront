@@ -77,28 +77,52 @@ export const useProductsStore = defineStore('products', () => {
     isFormOpen.value = true
   }
 
-  function closeForm() {
-    isFormOpen.value = false
+  async function editById(id: number) {
+    error.value = null
+    try {
+      const product = await productsService.getOne(id)
+      openEditForm(product)
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al cargar producto'
+    }
   }
 
-  async function saveProduct() {
+  function closeForm() {
+    isFormOpen.value = false
+    error.value = null
+  }
+
+  async function saveProduct(image?: File | null) {
     if (!form.value.name.trim()) return
 
     saving.value = true
     error.value = null
 
     try {
+      let productId: number
+
       if (editingId.value !== null) {
         const updated = await productsService.update(editingId.value, form.value)
         const index = products.value.findIndex((p) => p.id === editingId.value)
         if (index !== -1) {
           products.value[index] = updated
         }
+        productId = editingId.value
         closeForm()
       } else {
         const created = await productsService.create(form.value)
         editingId.value = created.id
+        productId = created.id
       }
+
+      if (image) {
+        const updated = await productsService.uploadImage(productId, image)
+        const index = products.value.findIndex((p) => p.id === productId)
+        if (index !== -1) {
+          products.value[index] = updated
+        }
+      }
+
       fetchProducts()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al guardar producto'
@@ -192,6 +216,7 @@ export const useProductsStore = defineStore('products', () => {
     setSize,
     openCreateForm,
     openEditForm,
+    editById,
     closeForm,
     saveProduct,
     deleteProduct,

@@ -8,17 +8,22 @@ import { AuditAction, EntityType } from '@/types/event'
 const store = useEventsStore()
 const route = useRoute()
 
-const fAction = ref('')
-const fEntityType = ref('')
-const fUserId = ref('')
-const fEntityId = ref('')
+const fAction = ref(store.filterParams.action ?? '')
+const fEntityType = ref(store.filterParams.entity_type ?? '')
+const fUserId = ref(store.filterParams.user_id ?? '')
+const fEntityId = ref(store.filterParams.entity_id ?? '')
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 watch([fAction, fEntityType, fUserId, fEntityId], () => {
-  if (hasFilters()) {
-    doFilter()
-  } else if (Object.keys(store.filterParams).length > 0) {
-    store.setFilter({})
-  }
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    if (hasFilters()) {
+      doFilter()
+    } else if (Object.keys(store.filterParams).length > 0) {
+      store.setFilter({})
+    }
+  }, 400)
 })
 
 function doFilter() {

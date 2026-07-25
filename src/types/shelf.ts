@@ -23,6 +23,7 @@ export interface ShelfItem {
 
 export interface ShelfDetail extends Shelf {
   current_weight_kg: number
+  current_volume_cm3: number
   items: ShelfItem[]
 }
 

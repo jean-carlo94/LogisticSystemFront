@@ -19,7 +19,6 @@ const localError = ref<string | null>(null)
 
 const avatarFile = ref<File | null>(null)
 const avatarPreview = ref<string | null>(null)
-const avatarUploading = ref(false)
 const dropActive = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
@@ -67,6 +66,13 @@ async function save() {
       if (form.value[k]) payload[key] = form.value[k]
     }
     await store.updateProfile(payload)
+
+    if (avatarFile.value) {
+      await store.uploadAvatar(avatarFile.value)
+      avatarFile.value = null
+      avatarPreview.value = null
+    }
+
     isEditing.value = false
   } catch (e) {
     localError.value = e instanceof Error ? e.message : 'Error'
@@ -93,19 +99,6 @@ function onAvatarDrop(event: DragEvent) {
   }
 }
 
-async function uploadAvatar() {
-  if (!avatarFile.value) return
-  avatarUploading.value = true
-  try {
-    await store.uploadAvatar(avatarFile.value)
-    avatarFile.value = null
-    avatarPreview.value = null
-  } catch (e) {
-    localError.value = e instanceof Error ? e.message : 'Error al subir imagen'
-  } finally {
-    avatarUploading.value = false
-  }
-}
 
 async function removeAvatar() {
   try {
@@ -184,16 +177,6 @@ async function removeAvatar() {
                 @change="onAvatarSelect"
               />
             </div>
-
-            <button
-              v-if="avatarFile"
-              type="button"
-              class="btn btn-primary"
-              :disabled="avatarUploading"
-              @click="uploadAvatar()"
-            >
-              {{ avatarUploading ? 'Subiendo...' : 'Subir' }}
-            </button>
 
             <button
               v-if="store.user?.image_url && !avatarPreview"

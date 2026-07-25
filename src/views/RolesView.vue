@@ -9,15 +9,20 @@ import PermissionsModal from '@/components/roles/PermissionsModal.vue'
 const store = useRolesStore()
 const auth = useAuthStore()
 
-const fName = ref('')
-const fDesc = ref('')
+const fName = ref(store.filterParams.name ?? '')
+const fDesc = ref(store.filterParams.description ?? '')
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 watch([fName, fDesc], () => {
-  if (fName.value || fDesc.value) {
-    doFilter()
-  } else if (Object.keys(store.filterParams).length > 0) {
-    store.setFilter({})
-  }
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    if (fName.value || fDesc.value) {
+      doFilter()
+    } else if (Object.keys(store.filterParams).length > 0) {
+      store.setFilter({})
+    }
+  }, 400)
 })
 
 function doFilter() {

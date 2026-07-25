@@ -1,9 +1,39 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useShelvesStore } from '@/stores/shelves'
 
 const store = useShelvesStore()
 const search = ref('')
+const qtys = reactive<Record<number, number>>({})
+
+function getQty(productId: number): number {
+  return qtys[productId] ?? 1
+}
+
+function setQty(productId: number, val: number) {
+  qtys[productId] = Math.max(1, Math.min(val, availableStock(productId)))
+}
+
+function onQtyInput(productId: number, event: Event) {
+  const val = Number((event.target as HTMLInputElement).value)
+  if (!Number.isNaN(val)) setQty(productId, val)
+}
+
+function availableStock(productId: number): number {
+  const product = store.paletteProducts.find(p => p.id === productId)
+  if (!product) return 9999
+  return Math.max(1, product.stock - (shelvedByProduct.value.get(productId) ?? 0))
+}
+
+const shelvedByProduct = computed(() => {
+  const map = new Map<number, number>()
+  for (const detail of store.details.values()) {
+    for (const item of detail.items) {
+      map.set(item.product_id, (map.get(item.product_id) ?? 0) + item.quantity)
+    }
+  }
+  return map
+})
 
 const filtered = computed(() => {
   const q = search.value.toLowerCase().trim()
@@ -15,10 +45,12 @@ const filtered = computed(() => {
   )
 })
 
-function onDragStart(event: DragEvent, productId: number, productName: string) {
+function onDragStart(event: DragEvent, productId: number, productName: string, stock: number, shelved: number) {
   event.dataTransfer!.effectAllowed = 'copy'
   event.dataTransfer!.setData('productId', String(productId))
   event.dataTransfer!.setData('productName', productName)
+  event.dataTransfer!.setData('productStock', String(Math.max(0, stock - shelved)))
+  event.dataTransfer!.setData('quantity', String(getQty(productId)))
 }
 </script>
 
@@ -52,11 +84,30 @@ function onDragStart(event: DragEvent, productId: number, productName: string) {
         :key="product.id"
         class="palette-item"
         draggable="true"
-        @dragstart="onDragStart($event, product.id, product.name)"
+        @dragstart="onDragStart($event, product.id, product.name, product.stock, shelvedByProduct.get(product.id) ?? 0)"
       >
         <div class="palette-item-info">
           <span class="palette-item-name">{{ product.name }}</span>
-          <span class="palette-item-stock">Stock: {{ product.stock }}</span>
+          <span class="palette-item-stock">
+            Stock: {{ product.stock }}
+            <span v-if="(shelvedByProduct.get(product.id) ?? 0) > 0" class="palette-shelved">
+              ({{ (shelvedByProduct.get(product.id) ?? 0) }} en estantes)
+            </span>
+          </span>
+        </div>
+        <div class="palette-qty" @dragstart.stop>
+          <button class="qty-btn" @click="setQty(product.id, getQty(product.id) - 1)">−</button>
+          <input
+            class="qty-input"
+            type="number"
+            :value="getQty(product.id)"
+            :min="1"
+            :max="availableStock(product.id)"
+            @input="onQtyInput(product.id, $event)"
+            @blur="onQtyInput(product.id, $event)"
+            @keyup.enter="onQtyInput(product.id, $event)"
+          />
+          <button class="qty-btn" @click="setQty(product.id, getQty(product.id) + 1)">+</button>
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drag-handle"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
       </div>
@@ -181,6 +232,66 @@ function onDragStart(event: DragEvent, productId: number, productName: string) {
 .palette-item-stock {
   font-size: 11px;
   color: var(--text-muted);
+}
+
+.palette-shelved {
+  color: var(--accent);
+}
+
+.palette-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.qty-btn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.qty-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.qty-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 20px;
+  text-align: center;
+}
+
+.qty-input {
+  width: 40px;
+  padding: 2px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .drag-handle {

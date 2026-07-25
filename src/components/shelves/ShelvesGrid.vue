@@ -7,10 +7,10 @@ const store = useShelvesStore()
 </script>
 
 <template>
-  <div v-if="store.shelves.length > 0">
+  <div v-if="store.filteredShelves.length > 0">
     <div class="shelves-grid">
       <ShelfCard
-        v-for="shelf in store.shelves"
+        v-for="shelf in store.filteredShelves"
         :key="shelf.id"
         :shelf="shelf"
         :detail="store.details.get(shelf.id)"

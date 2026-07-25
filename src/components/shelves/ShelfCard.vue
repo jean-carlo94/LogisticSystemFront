@@ -16,6 +16,15 @@ const capacityPct = computed(() => {
   return Math.min(100, Math.round((props.detail.current_weight_kg / props.shelf.max_weight_kg) * 100))
 })
 
+const shelfVol = computed(() => {
+  return props.shelf.width_cm * props.shelf.height_cm * props.shelf.depth_cm
+})
+
+const volumePct = computed(() => {
+  if (!props.detail || shelfVol.value <= 0) return null
+  return Math.min(100, Math.round((props.detail.current_volume_cm3 / shelfVol.value) * 100))
+})
+
 function locationLabel() {
   const parts: string[] = []
   if (props.shelf.aisle) parts.push(`Pasillo ${props.shelf.aisle}`)
@@ -34,8 +43,9 @@ function onDrop(event: DragEvent) {
   dragover.value = false
   const productId = event.dataTransfer?.getData('productId')
   const productName = event.dataTransfer?.getData('productName') || 'Producto'
+  const qty = Number(event.dataTransfer?.getData('quantity')) || 1
   if (productId) {
-    store.addItemToShelf(props.shelf.id, Number(productId), productName)
+    store.addItemToShelf(props.shelf.id, Number(productId), productName, qty)
   }
 }
 </script>
@@ -55,20 +65,26 @@ function onDrop(event: DragEvent) {
 
     <p class="shelf-location">{{ locationLabel() }}</p>
 
-    <div v-if="capacityPct !== null && detail" class="shelf-capacity">
-      <div class="capacity-bar">
+    <div class="shelf-bars">
+      <div v-if="capacityPct !== null && detail" class="capacity-bar">
         <div class="capacity-track">
-          <div
-            class="capacity-fill"
-            :class="capacityClass(capacityPct)"
-            :style="{ width: capacityPct + '%' }"
-          ></div>
+          <div class="capacity-fill" :class="capacityClass(capacityPct)" :style="{ width: capacityPct + '%' }"></div>
         </div>
-        <span class="capacity-label">{{ detail.current_weight_kg }} / {{ shelf.max_weight_kg }} kg</span>
+        <span class="capacity-label">Peso: {{ detail.current_weight_kg }} / {{ shelf.max_weight_kg }} kg</span>
       </div>
-    </div>
-    <div v-else-if="capacityPct === null && detail" class="shelf-capacity">
-      <span class="capacity-label no-limit">Peso: {{ detail.current_weight_kg }} kg — sin límite</span>
+      <div v-else-if="detail" class="capacity-bar">
+        <span class="capacity-label no-limit">Peso: {{ detail.current_weight_kg }} kg — sin límite</span>
+      </div>
+
+      <div v-if="volumePct !== null && detail" class="capacity-bar">
+        <div class="capacity-track">
+          <div class="capacity-fill" :class="capacityClass(volumePct)" :style="{ width: volumePct + '%' }"></div>
+        </div>
+        <span class="capacity-label">Vol: {{ (detail.current_volume_cm3 / 1000).toFixed(1) }} / {{ (shelfVol / 1000).toFixed(1) }} L</span>
+      </div>
+      <div v-else-if="detail && shelfVol > 0" class="capacity-bar">
+        <span class="capacity-label no-limit">Vol: {{ (detail.current_volume_cm3 / 1000).toFixed(1) }} L — sin límite</span>
+      </div>
     </div>
 
     <div class="shelf-card-footer">
@@ -138,10 +154,10 @@ function onDrop(event: DragEvent) {
   color: var(--text-secondary);
 }
 
-.shelf-capacity {
-  flex: 1;
+.shelf-bars {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .capacity-bar {

@@ -15,7 +15,6 @@ const stateOptions = [
 
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
-const imageUploading = ref(false)
 const dropActive = ref(false)
 
 const currentImageUrl = computed(() => {
@@ -27,7 +26,7 @@ const currentImageUrl = computed(() => {
 const fileInput = ref<HTMLInputElement | null>(null)
 
 function handleFile(file: File) {
-  if (!store.editingId || !file.type.startsWith('image/')) return
+  if (!file.type.startsWith('image/')) return
   imageFile.value = file
   imagePreview.value = URL.createObjectURL(file)
 }
@@ -44,23 +43,17 @@ function onDrop(event: DragEvent) {
   if (file) handleFile(file)
 }
 
-async function uploadImage() {
-  if (!imageFile.value || !store.editingId) return
-  imageUploading.value = true
-  try {
-    await store.uploadProductImage(store.editingId, imageFile.value)
-    imageFile.value = null
-    imagePreview.value = null
-  } finally {
-    imageUploading.value = false
-  }
-}
-
 async function removeImage() {
   if (!store.editingId) return
   await store.deleteProductImage(store.editingId)
   imagePreview.value = null
   imageFile.value = null
+}
+
+async function submitForm() {
+  await store.saveProduct(imageFile.value)
+  imageFile.value = null
+  imagePreview.value = null
 }
 </script>
 
@@ -70,7 +63,7 @@ async function removeImage() {
       <div class="modal" style="width: 560px; max-height: 90vh; overflow-y: auto;">
         <h2>{{ store.isEditing ? 'Editar producto' : 'Nuevo producto' }}</h2>
 
-        <form @submit.prevent="store.saveProduct()" class="form">
+        <form @submit.prevent="submitForm()" class="form">
           <label class="field">
             <span>Nombre</span>
             <input v-model="store.form.name" type="text" required placeholder="Nombre del producto" />
@@ -130,7 +123,7 @@ async function removeImage() {
             </div>
           </fieldset>
 
-          <div v-if="store.isEditing" class="image-section">
+          <div class="image-section">
             <span class="image-section-label">Imagen del producto</span>
 
             <div v-if="currentImageUrl || imagePreview" class="image-preview-wrap">
@@ -159,16 +152,6 @@ async function removeImage() {
                 @change="onFileInput"
               />
             </div>
-
-            <button
-              v-if="imageFile"
-              type="button"
-              class="btn btn-primary"
-              :disabled="imageUploading"
-              @click="uploadImage()"
-            >
-              {{ imageUploading ? 'Subiendo...' : 'Subir imagen' }}
-            </button>
           </div>
 
           <div class="actions">

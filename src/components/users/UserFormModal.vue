@@ -7,12 +7,11 @@ const store = useUsersStore()
 
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
-const imageUploading = ref(false)
 const dropActive = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 function handleFile(file: File) {
-  if (!store.editingId || !file.type.startsWith('image/')) return
+  if (!file.type.startsWith('image/')) return
   imageFile.value = file
   imagePreview.value = URL.createObjectURL(file)
 }
@@ -29,18 +28,6 @@ function onDrop(event: DragEvent) {
   if (file) handleFile(file)
 }
 
-async function uploadImage() {
-  if (!imageFile.value || !store.editingId) return
-  imageUploading.value = true
-  try {
-    await store.uploadUserImage(store.editingId, imageFile.value)
-    imageFile.value = null
-    imagePreview.value = null
-  } finally {
-    imageUploading.value = false
-  }
-}
-
 async function removeImage() {
   if (!store.editingId) return
   await store.deleteUserImage(store.editingId)
@@ -53,6 +40,12 @@ function currentImageUrl(): string | null {
   const user = store.users.find((u) => u.id === store.editingId)
   return user?.image_url ?? null
 }
+
+async function submitForm() {
+  await store.saveUser(imageFile.value)
+  imageFile.value = null
+  imagePreview.value = null
+}
 </script>
 
 <template>
@@ -60,7 +53,7 @@ function currentImageUrl(): string | null {
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
       <div class="modal" style="width: 540px; max-height: 90vh; overflow-y: auto;">
         <h2>Editar usuario</h2>
-        <form @submit.prevent="store.saveUser()" class="form">
+        <form @submit.prevent="submitForm()" class="form">
           <div class="row">
             <label class="field">
               <span>Nombre</span>
@@ -123,16 +116,6 @@ function currentImageUrl(): string | null {
                 @change="onFileInput"
               />
             </div>
-
-            <button
-              v-if="imageFile"
-              type="button"
-              class="btn btn-primary"
-              :disabled="imageUploading"
-              @click="uploadImage()"
-            >
-              {{ imageUploading ? 'Subiendo...' : 'Subir' }}
-            </button>
           </div>
 
           <div class="actions">

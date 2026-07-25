@@ -105,9 +105,10 @@ export const useUsersStore = defineStore('users', () => {
     isFormOpen.value = false
     form.value = {}
     editingId.value = null
+    error.value = null
   }
 
-  async function saveUser() {
+  async function saveUser(image?: File | null) {
     if (editingId.value === null) return
     saving.value = true
     error.value = null
@@ -123,6 +124,15 @@ export const useUsersStore = defineStore('users', () => {
       if (form.value.is_active !== undefined) payload.is_active = form.value.is_active
 
       await usersService.update(editingId.value, payload)
+
+      if (image) {
+        const updated = await usersService.uploadImage(editingId.value, image)
+        const index = users.value.findIndex((u) => u.id === editingId.value)
+        if (index !== -1) {
+          users.value[index] = updated
+        }
+      }
+
       closeForm()
       fetchUsers()
     } catch (e) {
@@ -171,6 +181,7 @@ export const useUsersStore = defineStore('users', () => {
     assignUserId.value = null
     selectedRoleId.value = null
     currentRoles.value = []
+    error.value = null
   }
 
   async function saveAssignRole(roleId: number) {

@@ -18,6 +18,17 @@ export const useShelvesStore = defineStore('shelves', () => {
   const total = ref(0)
   const pages = ref(0)
   const filterParams = ref<Record<string, string>>({})
+  const filterProduct = ref('')
+
+  const filteredShelves = computed(() => {
+    const q = filterProduct.value.toLowerCase().trim()
+    if (!q) return shelves.value
+    return shelves.value.filter((shelf) => {
+      const detail = details.value.get(shelf.id)
+      if (!detail) return false
+      return detail.items.some((item) => item.product_name.toLowerCase().includes(q))
+    })
+  })
 
   const form = ref<ShelfForm>(createEmptyShelf())
   const editingId = ref<number | null>(null)
@@ -80,6 +91,10 @@ export const useShelvesStore = defineStore('shelves', () => {
     fetchShelves()
   }
 
+  function setProductFilter(q: string) {
+    filterProduct.value = q
+  }
+
   function openCreateForm() {
     form.value = createEmptyShelf()
     editingId.value = null
@@ -104,6 +119,7 @@ export const useShelvesStore = defineStore('shelves', () => {
 
   function closeForm() {
     isFormOpen.value = false
+    error.value = null
   }
 
   async function saveShelf() {
@@ -173,15 +189,15 @@ export const useShelvesStore = defineStore('shelves', () => {
     }
   }
 
-  async function addItemToShelf(shelfId: number, productId: number, productName: string) {
+  async function addItemToShelf(shelfId: number, productId: number, productName: string, quantity = 1) {
     dropFeedback.value = null
 
     try {
-      await shelvesService.addItem(shelfId, { product_id: productId, quantity: 1 })
-      dropFeedback.value = `${productName} asignado`
+      await shelvesService.addItem(shelfId, { product_id: productId, quantity })
+      dropFeedback.value = `${productName} ×${quantity} asignado`
       await refreshDetail(shelfId)
       setTimeout(() => {
-        if (dropFeedback.value === `${productName} asignado`) {
+        if (dropFeedback.value === `${productName} ×${quantity} asignado`) {
           dropFeedback.value = null
         }
       }, 2500)
@@ -237,6 +253,23 @@ export const useShelvesStore = defineStore('shelves', () => {
     }
   }
 
+  function getProductShelves(productId: number) {
+    const result: { shelfId: number; code: string; name: string; quantity: number }[] = []
+    for (const detail of details.value.values()) {
+      for (const item of detail.items) {
+        if (item.product_id === productId) {
+          result.push({
+            shelfId: detail.id,
+            code: detail.code,
+            name: detail.name,
+            quantity: item.quantity,
+          })
+        }
+      }
+    }
+    return result
+  }
+
   function reset() {
     shelves.value = []
     details.value = new Map()
@@ -247,6 +280,7 @@ export const useShelvesStore = defineStore('shelves', () => {
     total.value = 0
     pages.value = 0
     filterParams.value = {}
+    filterProduct.value = ''
     form.value = createEmptyShelf()
     editingId.value = null
     isFormOpen.value = false
@@ -270,6 +304,8 @@ export const useShelvesStore = defineStore('shelves', () => {
     total,
     pages,
     filterParams,
+    filterProduct,
+    filteredShelves,
     form,
     editingId,
     isFormOpen,
@@ -283,6 +319,7 @@ export const useShelvesStore = defineStore('shelves', () => {
     isEditing,
     fetchShelves,
     setFilter,
+    setProductFilter,
     goToPage,
     setSize,
     openCreateForm,
@@ -297,6 +334,7 @@ export const useShelvesStore = defineStore('shelves', () => {
     removeItem,
     fetchPaletteProducts,
     togglePalette,
+    getProductShelves,
     reset,
   }
 })

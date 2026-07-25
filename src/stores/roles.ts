@@ -104,6 +104,7 @@ export const useRolesStore = defineStore('roles', () => {
 
   function closeForm() {
     isFormOpen.value = false
+    error.value = null
   }
 
   async function saveRole() {
@@ -148,6 +149,7 @@ export const useRolesStore = defineStore('roles', () => {
   function closePermissions() {
     isPermsOpen.value = false
     selectedRoleId.value = null
+    error.value = null
   }
 
   async function savePermissions(permissionIds: number[]) {

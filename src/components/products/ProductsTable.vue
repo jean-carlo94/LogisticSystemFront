@@ -1,12 +1,23 @@
 <script setup lang="ts">
 import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
+import { useShelvesStore } from '@/stores/shelves'
+import { useRouter } from 'vue-router'
 import ProductBadge from './ProductBadge.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import { getMediaUrl } from '@/composables/useFormat'
 
 const store = useProductsStore()
 const auth = useAuthStore()
+const shelvesStore = useShelvesStore()
+const router = useRouter()
+
+function openShelf(shelfId: number) {
+  if (shelvesStore.details.size === 0) {
+    shelvesStore.fetchShelves()
+  }
+  router.push({ path: '/shelves', query: { open: shelfId } })
+}
 </script>
 
 <template>
@@ -21,6 +32,7 @@ const auth = useAuthStore()
             <th>Precio</th>
             <th>Stock</th>
             <th>Código</th>
+            <th>Estanterías</th>
             <th>Estado</th>
             <th v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')"></th>
           </tr>
@@ -44,6 +56,20 @@ const auth = useAuthStore()
             <td class="price-cell">{{ product.price.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' }) }}</td>
             <td>{{ product.stock }}</td>
             <td class="muted">{{ product.barcode || '—' }}</td>
+            <td>
+              <div class="shelf-badges">
+                <template v-if="shelvesStore.details.size > 0">
+                  <span
+                    v-for="s in shelvesStore.getProductShelves(product.id)"
+                    :key="s.shelfId"
+                    class="shelf-badge"
+                    @click="openShelf(s.shelfId)"
+                    :title="s.name + ' (×' + s.quantity + ')'"
+                  >{{ s.code }} ×{{ s.quantity }}</span>
+                </template>
+                <span v-else class="muted">—</span>
+              </div>
+            </td>
             <td>
               <ProductBadge :state="product.state" />
             </td>
@@ -82,5 +108,28 @@ const auth = useAuthStore()
 .no-thumb {
   color: var(--text-muted);
   font-size: 13px;
+}
+
+.shelf-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.shelf-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--accent-light);
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-weight: 500;
+}
+
+.shelf-badge:hover {
+  background: var(--accent);
+  color: #fff;
 }
 </style>

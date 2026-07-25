@@ -25,6 +25,10 @@ export const productsService = {
     return api.delete(`/products/${id}`) as Promise<void>
   },
 
+  async getOne(id: number): Promise<Product> {
+    return api.get(`/products/${id}`) as Promise<Product>
+  },
+
   async uploadImage(id: number, file: File): Promise<Product> {
     const formData = new FormData()
     formData.append('file', file)

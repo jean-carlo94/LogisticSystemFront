@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useShelvesStore } from '@/stores/shelves'
 import { useAuthStore } from '@/stores/auth'
 import ShelvesGrid from '@/components/shelves/ShelvesGrid.vue'
@@ -9,20 +10,27 @@ import ProductPalette from '@/components/shelves/ProductPalette.vue'
 
 const store = useShelvesStore()
 const auth = useAuthStore()
+const route = useRoute()
+const router2 = useRouter()
 
-const fCode = ref('')
-const fName = ref('')
-const fAisle = ref('')
-const fRow = ref('')
-const fLevel = ref('')
+const fCode = ref(store.filterParams.code ?? '')
+const fName = ref(store.filterParams.name ?? '')
+const fAisle = ref(store.filterParams.aisle ?? '')
+const fRow = ref(store.filterParams.row ?? '')
+const fLevel = ref(store.filterParams.level ?? '')
+const fProduct = ref(store.filterProduct)
 
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 watch([fCode, fName, fAisle, fRow, fLevel], () => {
-  if (hasFilters()) {
-    doFilter()
-  } else if (Object.keys(store.filterParams).length > 0) {
-    store.setFilter({})
-  }
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    if (hasFilters()) {
+      doFilter()
+    } else if (Object.keys(store.filterParams).length > 0) {
+      store.setFilter({})
+    }
+  }, 400)
 })
 
 function doFilter() {
@@ -41,13 +49,20 @@ function clearFilter() {
   fAisle.value = ''
   fRow.value = ''
   fLevel.value = ''
+  fProduct.value = ''
   store.setFilter({})
+  store.setProductFilter('')
 }
 
 const hasFilters = () => fCode.value || fName.value || fAisle.value || fRow.value || fLevel.value
 
-onMounted(() => {
-  store.fetchShelves()
+onMounted(async () => {
+  await store.fetchShelves()
+  const openId = route.query.open
+  if (openId) {
+    store.openDetail(Number(openId))
+    router2.replace({ query: {} })
+  }
 })
 </script>
 
@@ -74,8 +89,16 @@ onMounted(() => {
       <input v-model="fAisle" type="text" placeholder="Pasillo" class="filter-field filter-sm" @keyup.enter="doFilter" />
       <input v-model="fRow" type="number" min="0" placeholder="Fila" class="filter-field filter-num" @keyup.enter="doFilter" />
       <input v-model="fLevel" type="number" min="0" placeholder="Nivel" class="filter-field filter-num" @keyup.enter="doFilter" />
+      <input
+        v-model="fProduct"
+        type="text"
+        placeholder="Buscar producto..."
+        class="filter-field filter-product"
+        @keyup.enter="store.setProductFilter(fProduct)"
+        @input="store.setProductFilter(fProduct)"
+      />
       <button class="btn" @click="doFilter">Filtrar</button>
-      <button v-if="hasFilters()" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
+      <button v-if="hasFilters() || fProduct" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>
 
     <ShelfFormModal />
@@ -94,7 +117,7 @@ onMounted(() => {
       <button class="btn" @click="store.fetchShelves()">Reintentar</button>
     </div>
 
-    <div v-else-if="store.shelves.length === 0" class="empty-state">
+    <div v-else-if="store.filteredShelves.length === 0" class="empty-state">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; opacity: 0.3">
         <line x1="8" y1="21" x2="16" y2="21"/>
         <line x1="12" y1="17" x2="12" y2="21"/>
@@ -145,6 +168,10 @@ onMounted(() => {
 
 .filter-num {
   max-width: 80px;
+}
+
+.filter-product {
+  min-width: 180px;
 }
 
 .content-layout {

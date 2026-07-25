@@ -1,26 +1,34 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
+import { useShelvesStore } from '@/stores/shelves'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsTable from '@/components/products/ProductsTable.vue'
 import { ProductState } from '@/types/product'
 
 const store = useProductsStore()
 const auth = useAuthStore()
+const shelvesStore = useShelvesStore()
+const route = useRoute()
 
-const fName = ref('')
-const fBarcode = ref('')
-const fState = ref('')
-const fStock = ref('')
+const fName = ref(store.filterParams.name ?? '')
+const fBarcode = ref(store.filterParams.barcode ?? '')
+const fState = ref(store.filterParams.state ?? '')
+const fStock = ref(store.filterParams.stock ?? '')
 
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 watch([fName, fBarcode, fState, fStock], () => {
-  if (hasFilters()) {
-    doFilter()
-  } else if (Object.keys(store.filterParams).length > 0) {
-    store.setFilter({})
-  }
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    if (hasFilters()) {
+      doFilter()
+    } else if (Object.keys(store.filterParams).length > 0) {
+      store.setFilter({})
+    }
+  }, 400)
 })
 
 function doFilter() {
@@ -44,6 +52,13 @@ const hasFilters = () => fName.value || fBarcode.value || fState.value || fStock
 
 onMounted(() => {
   store.fetchProducts()
+  if (shelvesStore.details.size === 0) {
+    shelvesStore.fetchShelves()
+  }
+  const editId = route.query.edit
+  if (editId) {
+    store.editById(Number(editId))
+  }
 })
 </script>
 

@@ -7,21 +7,25 @@ import RoleAssignModal from '@/components/users/RoleAssignModal.vue'
 
 const store = useUsersStore()
 
-const fEmail = ref('')
-const fFirst = ref('')
-const fLast = ref('')
-const fCity = ref('')
-const fCountry = ref('')
-const fActive = ref('')
-const fSuper = ref('')
+const fEmail = ref(store.filterParams.email ?? '')
+const fFirst = ref(store.filterParams.first_name ?? '')
+const fLast = ref(store.filterParams.last_name ?? '')
+const fCity = ref(store.filterParams.city ?? '')
+const fCountry = ref(store.filterParams.country ?? '')
+const fActive = ref(store.filterParams.is_active ?? '')
+const fSuper = ref(store.filterParams.is_super_admin ?? '')
 
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 watch([fEmail, fFirst, fLast, fCity, fCountry, fActive, fSuper], () => {
-  if (hasFilters()) {
-    doFilter()
-  } else if (Object.keys(store.filterParams).length > 0) {
-    store.setFilter({})
-  }
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    if (hasFilters()) {
+      doFilter()
+    } else if (Object.keys(store.filterParams).length > 0) {
+      store.setFilter({})
+    }
+  }, 400)
 })
 
 function doFilter() {

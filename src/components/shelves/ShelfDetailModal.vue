@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { useShelvesStore } from '@/stores/shelves'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const store = useShelvesStore()
 const auth = useAuthStore()
+const router = useRouter()
+
+function goToProduct(productId: number) {
+  store.closeDetail()
+  router.push({ name: 'products', query: { edit: productId } })
+}
 
 function shelfLocation() {
   const s = store.selectedShelf
@@ -19,6 +26,20 @@ function capacityPct() {
   const s = store.selectedShelf
   if (!s || s.max_weight_kg <= 0) return null
   return Math.min(100, Math.round((s.current_weight_kg / s.max_weight_kg) * 100))
+}
+
+function volumePct() {
+  const s = store.selectedShelf
+  if (!s) return null
+  const vol = s.width_cm * s.height_cm * s.depth_cm
+  if (vol <= 0) return null
+  return Math.min(100, Math.round((s.current_volume_cm3 / vol) * 100))
+}
+
+function shelfVolumeL() {
+  const s = store.selectedShelf
+  if (!s) return 0
+  return (s.width_cm * s.height_cm * s.depth_cm) / 1000
 }
 
 function capacityClass(pct: number) {
@@ -41,7 +62,7 @@ function capacityClass(pct: number) {
             <button
               v-if="auth.hasPermission('shelves_update')"
               class="btn btn-ghost"
-              @click="store.closeDetail(); store.openEditForm(store.selectedShelf!)"
+              @click="store.openEditForm(store.selectedShelf!); store.closeDetail()"
             >Editar</button>
             <button
               v-if="auth.hasPermission('shelves_delete')"
@@ -51,20 +72,26 @@ function capacityClass(pct: number) {
           </div>
         </div>
 
-        <div v-if="capacityPct() !== null" class="detail-capacity">
-          <div class="capacity-bar">
+        <div class="detail-bars">
+          <div v-if="capacityPct() !== null" class="capacity-bar">
             <div class="capacity-track">
-              <div
-                class="capacity-fill"
-                :class="capacityClass(capacityPct()!)"
-                :style="{ width: capacityPct() + '%' }"
-              ></div>
+              <div class="capacity-fill" :class="capacityClass(capacityPct()!)" :style="{ width: capacityPct() + '%' }"></div>
             </div>
-            <span class="capacity-label">{{ store.selectedShelf.current_weight_kg }} / {{ store.selectedShelf.max_weight_kg }} kg ({{ capacityPct() }}%)</span>
+            <span class="capacity-label">Peso: {{ store.selectedShelf.current_weight_kg }} / {{ store.selectedShelf.max_weight_kg }} kg ({{ capacityPct() }}%)</span>
           </div>
-        </div>
-        <div v-else class="detail-capacity">
-          <span class="capacity-label no-limit">Peso actual: {{ store.selectedShelf.current_weight_kg }} kg — sin límite de capacidad</span>
+          <div v-else class="capacity-bar">
+            <span class="capacity-label no-limit">Peso: {{ store.selectedShelf.current_weight_kg }} kg — sin límite</span>
+          </div>
+
+          <div v-if="volumePct() !== null" class="capacity-bar">
+            <div class="capacity-track">
+              <div class="capacity-fill" :class="capacityClass(volumePct()!)" :style="{ width: volumePct() + '%' }"></div>
+            </div>
+            <span class="capacity-label">Volumen: {{ (store.selectedShelf.current_volume_cm3 / 1000).toFixed(1) }} / {{ shelfVolumeL().toFixed(1) }} L ({{ volumePct() }}%)</span>
+          </div>
+          <div v-else-if="shelfVolumeL() > 0" class="capacity-bar">
+            <span class="capacity-label no-limit">Volumen: {{ (store.selectedShelf.current_volume_cm3 / 1000).toFixed(1) }} L — sin límite</span>
+          </div>
         </div>
 
         <div v-if="store.error" class="error-banner" style="margin-top: 16px;">
@@ -81,7 +108,7 @@ function capacityClass(pct: number) {
 
           <div v-else class="items-list">
             <div v-for="item in store.selectedShelf.items" :key="item.id" class="item-row">
-              <span class="item-name">{{ item.product_name }}</span>
+              <a class="item-name" @click="goToProduct(item.product_id)">{{ item.product_name }}</a>
               <div v-if="auth.hasPermission('shelves_update')" class="item-qty">
                 <button class="qty-btn" @click="store.updateItemQuantity(store.selectedShelf!.id, item.id, item.quantity - 1)">−</button>
                 <span class="qty-value">{{ item.quantity }}</span>
@@ -128,7 +155,10 @@ function capacityClass(pct: number) {
   flex-shrink: 0;
 }
 
-.detail-capacity {
+.detail-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
@@ -195,6 +225,13 @@ function capacityClass(pct: number) {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.item-name:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .item-qty {
