@@ -19,8 +19,14 @@ export interface Product {
   depth_cm: number
   image_path: string | null
   image_url: string | null
+  categories: ProductCategory[]
   create_at: string
   update_at: string
+}
+
+export interface ProductCategory {
+  id: number
+  name: string
 }
 
 export interface ProductForm {

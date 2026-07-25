@@ -4,6 +4,7 @@ import type { UserAdmin, UserAdminForm, UserRoleSimple } from '@/types/user'
 import type { Role } from '@/types/role'
 import { usersService } from '@/services/users'
 import { rolesService } from '@/services/roles'
+import { useAutoClearError } from '@/composables/useAutoClearError'
 
 export const useUsersStore = defineStore('users', () => {
   const users = ref<UserAdmin[]>([])
@@ -18,6 +19,8 @@ export const useUsersStore = defineStore('users', () => {
   const loading = ref(false)
   const saving = ref(false)
   const error = ref<string | null>(null)
+
+  const { clearErrorTimer } = useAutoClearError(error)
 
   const page = ref(1)
   const size = ref(20)
@@ -77,6 +80,7 @@ export const useUsersStore = defineStore('users', () => {
   }
 
   function reset() {
+    clearErrorTimer()
     users.value = []
     roles.value = []
     currentRoles.value = []
@@ -96,7 +100,14 @@ export const useUsersStore = defineStore('users', () => {
   }
 
   function openEditForm(user: UserAdmin) {
-    form.value = { email: user.email }
+    form.value = {
+      email: user.email,
+      first_name: user.first_name ?? undefined,
+      last_name: user.last_name ?? undefined,
+      phone: user.phone ?? undefined,
+      city: user.city ?? undefined,
+      country: user.country ?? undefined,
+    }
     editingId.value = user.id
     isFormOpen.value = true
   }

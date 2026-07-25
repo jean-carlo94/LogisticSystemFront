@@ -7,6 +7,9 @@ import { useEventsStore } from '@/stores/events'
 import { useRolesStore } from '@/stores/roles'
 import { useUsersStore } from '@/stores/users'
 import { useShelvesStore } from '@/stores/shelves'
+import { useCategoriesStore } from '@/stores/categories'
+import { useSalesStore } from '@/stores/sales'
+import { useAutoClearError } from '@/composables/useAutoClearError'
 
 function resetAllStores() {
   useProductsStore().reset()
@@ -14,6 +17,8 @@ function resetAllStores() {
   useRolesStore().reset()
   useUsersStore().reset()
   useShelvesStore().reset()
+  useCategoriesStore().reset()
+  useSalesStore().reset()
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -21,6 +26,8 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('access_token'))
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  const { clearErrorTimer } = useAutoClearError(error)
 
   const isAuthenticated = computed(() => token.value !== null)
   const permissions = computed(() => user.value?.permissions ?? [])
@@ -120,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function reset() {
+    clearErrorTimer()
     token.value = null
     user.value = null
     loading.value = false

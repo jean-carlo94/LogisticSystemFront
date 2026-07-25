@@ -5,6 +5,7 @@ import { createEmptyShelf } from '@/types/shelf'
 import type { Product } from '@/types/product'
 import { shelvesService } from '@/services/shelves'
 import { productsService } from '@/services/products'
+import { useAutoClearError } from '@/composables/useAutoClearError'
 
 export const useShelvesStore = defineStore('shelves', () => {
   const shelves = ref<Shelf[]>([])
@@ -12,6 +13,8 @@ export const useShelvesStore = defineStore('shelves', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const saving = ref(false)
+
+  const { clearErrorTimer } = useAutoClearError(error)
 
   const page = ref(1)
   const size = ref(20)
@@ -41,6 +44,8 @@ export const useShelvesStore = defineStore('shelves', () => {
   const paletteProducts = ref<Product[]>([])
   const paletteLoading = ref(false)
   const paletteError = ref<string | null>(null)
+
+  const { clearErrorTimer: clearPaletteErrorTimer } = useAutoClearError(paletteError)
 
   const dropFeedback = ref<string | null>(null)
   let feedbackTimer: ReturnType<typeof setTimeout> | null = null
@@ -273,6 +278,8 @@ export const useShelvesStore = defineStore('shelves', () => {
   }
 
   function reset() {
+    clearErrorTimer()
+    clearPaletteErrorTimer()
     shelves.value = []
     details.value = new Map()
     loading.value = false

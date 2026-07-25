@@ -2,11 +2,14 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Event } from '@/types/event'
 import { eventsService } from '@/services/events'
+import { useAutoClearError } from '@/composables/useAutoClearError'
 
 export const useEventsStore = defineStore('events', () => {
   const events = ref<Event[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  const { clearErrorTimer } = useAutoClearError(error)
 
   const page = ref(1)
   const size = ref(10)
@@ -62,6 +65,7 @@ export const useEventsStore = defineStore('events', () => {
   }
 
   function reset() {
+    clearErrorTimer()
     events.value = []
     loading.value = false
     error.value = null

@@ -38,6 +38,24 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/categories',
+    name: 'categories',
+    component: () => import('@/views/CategoriesView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/sales',
+    name: 'sales',
+    component: () => import('@/views/SalesView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/sales/history',
+    name: 'sales-history',
+    component: () => import('@/views/SalesHistoryView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/products',
   },

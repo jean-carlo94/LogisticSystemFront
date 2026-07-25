@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { Product, ProductForm } from '@/types/product'
 import { createEmptyProduct } from '@/types/product'
 import { productsService } from '@/services/products'
+import { useAutoClearError } from '@/composables/useAutoClearError'
 
 export const useProductsStore = defineStore('products', () => {
   const products = ref<Product[]>([])
@@ -12,6 +13,8 @@ export const useProductsStore = defineStore('products', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const saving = ref(false)
+
+  const { clearErrorTimer } = useAutoClearError(error)
 
   const page = ref(1)
   const size = ref(10)
@@ -183,6 +186,7 @@ export const useProductsStore = defineStore('products', () => {
   }
 
   function reset() {
+    clearErrorTimer()
     products.value = []
     form.value = createEmptyProduct()
     editingId.value = null

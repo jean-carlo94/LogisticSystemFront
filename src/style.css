@@ -36,7 +36,7 @@
   --warning: #f59e0b;
   --warning-light: rgba(245, 158, 11, 0.1);
   --danger: #ef4444;
-  --danger-light: rgba(239, 68, 68, 0.1);
+  --danger-light: rgba(239, 68, 68, 0.15);
   --info: #3b82f6;
   --info-light: rgba(59, 130, 246, 0.1);
   --purple: #8b5cf6;
@@ -70,7 +70,7 @@
   --warning: #fbbf24;
   --warning-light: rgba(251, 191, 36, 0.1);
   --danger: #f87171;
-  --danger-light: rgba(248, 113, 113, 0.1);
+  --danger-light: rgba(248, 113, 113, 0.18);
   --info: #60a5fa;
   --info-light: rgba(96, 165, 250, 0.1);
   --purple: #a78bfa;
@@ -271,13 +271,29 @@ td {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 12px 16px;
   margin-bottom: 16px;
   border-radius: var(--radius-sm);
   background: var(--danger-light);
   border: 1px solid var(--danger);
+  border-left: 4px solid var(--danger);
   color: var(--danger);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.error-banner::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background: var(--danger);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='15' y1='9' x2='9' y2='15'/%3E%3Cline x1='9' y1='9' x2='15' y2='15'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 /* ---- tables ---- */

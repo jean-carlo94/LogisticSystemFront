@@ -1,5 +1,6 @@
 import api from './api'
 import type { Product, ProductForm } from '@/types/product'
+import type { ProductLocation } from '@/types/sale'
 import type { PaginatedResponse } from '@/types/pagination'
 
 export const productsService = {
@@ -39,5 +40,9 @@ export const productsService = {
 
   async deleteImage(id: number): Promise<void> {
     return api.delete(`/products/${id}/image`) as Promise<void>
+  },
+
+  async getLocations(id: number): Promise<ProductLocation[]> {
+    return api.get(`/products/${id}/locations`) as Promise<ProductLocation[]>
   },
 }

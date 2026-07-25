@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Role, RoleForm, Permission } from '@/types/role'
 import { rolesService } from '@/services/roles'
+import { useAutoClearError } from '@/composables/useAutoClearError'
 
 export const useRolesStore = defineStore('roles', () => {
   const roles = ref<Role[]>([])
@@ -15,6 +16,8 @@ export const useRolesStore = defineStore('roles', () => {
   const loading = ref(false)
   const saving = ref(false)
   const error = ref<string | null>(null)
+
+  const { clearErrorTimer } = useAutoClearError(error)
 
   const page = ref(1)
   const size = ref(20)
@@ -73,6 +76,7 @@ export const useRolesStore = defineStore('roles', () => {
   }
 
   function reset() {
+    clearErrorTimer()
     roles.value = []
     permissions.value = []
     rolePermissions.value = []
