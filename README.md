@@ -57,27 +57,31 @@ docker run -p 80:80 assisprexfront
 ```
 src/
 ├── components/
-│   ├── layout/AppNav.vue          # navegacion principal
-│   ├── products/
-│   │   ├── ProductBadge.vue       # badge de estado
-│   │   ├── ProductForm.vue        # modal crear/editar
-│   │   └── ProductsTable.vue      # tabla de productos
-│   └── ui/Pagination.vue          # paginacion reutilizable
-├── router/index.ts                # rutas (/products, /events)
+│   ├── layout/                   AppSidebar.vue, ProfileModal.vue
+│   ├── products/                 ProductBadge.vue, ProductForm.vue, ProductsTable.vue
+│   ├── shelves/                  ShelfCard.vue, ShelvesGrid.vue, ShelfFormModal.vue, ShelfDetailModal.vue, ProductPalette.vue
+│   ├── events/                   EventBadge.vue, EventsTable.vue
+│   ├── roles/                    RoleFormModal.vue, PermissionsModal.vue, RolesTable.vue
+│   ├── users/                    UserFormModal.vue, RoleAssignModal.vue, UsersTable.vue
+│   └── ui/                       Pagination.vue
+├── composables/                  useTheme.ts, useSidebar.ts
+├── router/index.ts               createWebHistory, beforeEach guard for auth
 ├── services/
-│   ├── api.ts                     # instancia axios + interceptors
-│   ├── events.ts                  # endpoints de eventos
-│   └── products.ts                # endpoints de productos
+│   ├── api.ts                    instancia axios + interceptors
+│   └── auth.ts                   endpoints auth
+│   └── ...                       products, events, roles, users, shelves, categories, sales
 ├── stores/
-│   ├── events.ts                  # Pinia store de eventos
-│   └── products.ts                # Pinia store de productos (CRUD)
+│   ├── auth.ts                   Pinia store autenticacion
+│   └── ...                       products, events, roles, users, shelves, categories, sales
 ├── types/
-│   ├── event.ts                   # tipo Event
-│   ├── pagination.ts              # PaginatedResponse<T>
-│   └── product.ts                 # Product, ProductForm, ProductState enum
+│   ├── auth.ts                   User, LoginPayload, RegisterPayload, etc.
+│   └── ...                       product, event, role, user, pagination, shelf, category, sale
 ├── views/
-│   ├── EventsView.vue             # pagina de log de eventos
-│   └── ProductsView.vue           # pagina de productos
+│   ├── AuthView.vue              login + registro
+│   ├── VerifyEmailView.vue       activacion de cuenta
+│   ├── ForgotPasswordView.vue    solicitar recuperacion
+│   ├── ResetPasswordView.vue     restablecer contraseña
+│   └── ...                       Products, Shelves, Events, Roles, Users, Categories, Sales
 ├── App.vue
 ├── main.ts
 └── style.css
@@ -85,12 +89,34 @@ src/
 
 ## Rutas
 
-| Ruta | Pagina |
-|---|---|
-| `/products` | CRUD de productos |
-| `/events` | Log de eventos (filtrable por `?product_id=X`) |
+| Ruta | Pagina | Auth |
+|---|---|---|
+| `/auth` | Login / Registro | Publica |
+| `/verify-email?token=xxx` | Activacion de cuenta | Publica |
+| `/forgot-password` | Solicitar recuperacion de contraseña | Publica |
+| `/reset-password?token=xxx` | Restablecer contraseña | Publica |
+| `/products` | CRUD de productos | Requerido |
+| `/shelves` | Estanterias | Requerido |
+| `/events` | Log de eventos | Requerido |
+| `/roles` | Gestion de roles y permisos | Requerido |
+| `/users` | Gestion de usuarios | Requerido |
+| `/categories` | Categorias de productos | Requerido |
+| `/sales` | Ventas | Requerido |
+| `/sales/history` | Historial de ventas | Requerido | |
 
 ## Endpoints esperados
+
+### Auth
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| `POST` | `/auth/register` | Registrar usuario |
+| `POST` | `/auth/login` | Iniciar sesion |
+| `GET` | `/auth/me` | Perfil del usuario autenticado |
+| `PUT` | `/auth/me` | Actualizar perfil |
+| `GET` | `/auth/activate?token=xxx` | Activar cuenta via email |
+| `POST` | `/auth/forgot-password` | Solicitar reset de contraseña |
+| `POST` | `/auth/reset-password` | Ejecutar reset de contraseña |
 
 ### Productos
 

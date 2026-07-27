@@ -130,6 +130,10 @@ function toggleMode() {
           {{ isRegister ? 'Inicia sesión' : 'Regístrate' }}
         </button>
       </p>
+
+      <p v-if="!isRegister" class="toggle-text forgot">
+        <button class="link-btn" @click="router.push('/forgot-password')">¿Olvidaste tu contraseña?</button>
+      </p>
     </div>
   </div>
 </template>
@@ -245,5 +249,9 @@ function toggleMode() {
 @media (max-width: 768px) {
   .row { flex-direction: column; }
   .auth-card.wide { width: 380px; }
+}
+
+.forgot {
+  margin-top: 4px;
 }
 </style>

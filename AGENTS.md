@@ -47,11 +47,16 @@ src/
   stores/            Pinia setup-function stores
   types/             TS interfaces + enums per domain
   views/             Page-level components (minimal wiring: header, state, table, modals)
+                     AuthView, VerifyEmailView, ForgotPasswordView, ResetPasswordView
+                     ProductsView, ShelvesView, EventsView, RolesView, UsersView
+                     CategoriesView, SalesView, SalesHistoryView
 ```
 
 ### View pattern
 
 Views are thin containers. They only render the page header, loading/error/empty state, and delegate table + pagination + modals to their component files. Never put inline table markup or modal markup inside a view.
+
+Auth-flow views (`AuthView`, `VerifyEmailView`, `ForgotPasswordView`, `ResetPasswordView`) are the exception: they are self-contained form pages (login, register, activation, password reset) without table/modal delegation.
 
 ```vue
 // Correct — ProductsView.vue
@@ -146,6 +151,9 @@ Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
 - `POST /auth/login` — `{ email, password }`, returns `{ access_token, token_type }`
 - `GET /auth/me` — current user profile with `roles[]` and `permissions[]`
 - `PUT /auth/me` — update own profile (`first_name, last_name, phone, city, country, password`)
+- `GET /auth/activate?token=xxx` — activate account via email token, returns `{ message }`
+- `POST /auth/forgot-password` — `{ email }`, always returns `{ message }` (anti-enumeration), sends reset email if account exists
+- `POST /auth/reset-password` — `{ token, new_password }` (new_password min 6 max 128), returns `{ message }`
 
 ### Products (protected)
 

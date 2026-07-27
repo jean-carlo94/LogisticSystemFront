@@ -1,5 +1,5 @@
 import api from './api'
-import type { LoginPayload, RegisterPayload, AuthResponse, User, ProfileUpdate } from '@/types/auth'
+import type { LoginPayload, RegisterPayload, AuthResponse, User, ProfileUpdate, ForgotPasswordPayload, ResetPasswordPayload, MessageResponse } from '@/types/auth'
 
 export const authService = {
   async register(payload: RegisterPayload): Promise<void> {
@@ -28,5 +28,17 @@ export const authService = {
 
   async deleteAvatar(): Promise<void> {
     return api.delete('/auth/me/image') as Promise<void>
+  },
+
+  async activate(token: string): Promise<MessageResponse> {
+    return api.get('/auth/activate', { params: { token } }) as Promise<MessageResponse>
+  },
+
+  async forgotPassword(payload: ForgotPasswordPayload): Promise<MessageResponse> {
+    return api.post('/auth/forgot-password', payload) as Promise<MessageResponse>
+  },
+
+  async resetPassword(payload: ResetPasswordPayload): Promise<MessageResponse> {
+    return api.post('/auth/reset-password', payload) as Promise<MessageResponse>
   },
 }

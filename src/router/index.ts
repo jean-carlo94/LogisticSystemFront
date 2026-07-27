@@ -8,6 +8,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/AuthView.vue'),
   },
   {
+    path: '/verify-email',
+    name: 'verify-email',
+    component: () => import('@/views/VerifyEmailView.vue'),
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/ForgotPasswordView.vue'),
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+  },
+  {
     path: '/products',
     name: 'products',
     component: () => import('@/views/ProductsView.vue'),
