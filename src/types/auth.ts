@@ -1,4 +1,4 @@
-export interface User {
+export interface UserBase {
   id: number
   email: string
   first_name: string | null
@@ -12,6 +12,9 @@ export interface User {
   image_url: string | null
   created_at: string
   updated_at: string
+}
+
+export interface User extends UserBase {
   roles: UserRole[]
   permissions: string[]
 }

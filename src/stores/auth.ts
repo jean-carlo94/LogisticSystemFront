@@ -31,7 +31,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => token.value !== null)
   const permissions = computed(() => user.value?.permissions ?? [])
-  const roles = computed(() => user.value?.roles ?? [])
   const displayName = computed(() => {
     const u = user.value
     if (!u) return ''
@@ -141,7 +140,6 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     isAuthenticated,
     permissions,
-    roles,
     displayName,
     hasPermission,
     login,

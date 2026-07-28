@@ -1,17 +1,11 @@
-import api, { unwrap } from './api'
+import api, { unwrap, buildParams } from './api'
 import type { Product, ProductForm } from '@/types/product'
 import type { ProductLocation } from '@/types/sale'
 import type { PaginatedResponse } from '@/types/pagination'
 
 export const productsService = {
   async getAll(page = 1, size = 10, filters?: Record<string, string>): Promise<PaginatedResponse<Product>> {
-    const params: Record<string, string | number> = { page, size }
-    if (filters) {
-      for (const [k, v] of Object.entries(filters)) {
-        if (v) params[k] = v
-      }
-    }
-    return unwrap(api.get<PaginatedResponse<Product>>('/products', { params }))
+    return unwrap(api.get<PaginatedResponse<Product>>('/products', { params: buildParams(page, size, filters) }))
   },
 
   async create(data: ProductForm): Promise<Product> {

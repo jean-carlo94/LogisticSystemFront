@@ -134,22 +134,6 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
-  async function uploadProductImage(id: number, file: File) {
-    saving.value = true
-    error.value = null
-    try {
-      const updated = await productsService.uploadImage(id, file)
-      const index = products.value.findIndex((p) => p.id === id)
-      if (index !== -1) {
-        products.value[index] = updated
-      }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Error al subir imagen'
-    } finally {
-      saving.value = false
-    }
-  }
-
   async function deleteProductImage(id: number) {
     saving.value = true
     error.value = null
@@ -225,7 +209,6 @@ export const useProductsStore = defineStore('products', () => {
     closeForm,
     saveProduct,
     deleteProduct,
-    uploadProductImage,
     deleteProductImage,
     reset,
   }

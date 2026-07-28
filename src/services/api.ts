@@ -48,4 +48,14 @@ export function unwrap<T>(promise: Promise<AxiosResponse<T>>): Promise<T> {
   return promise.then((r) => r.data)
 }
 
+export function buildParams(page: number, size: number, filters?: Record<string, string>): Record<string, string | number> {
+  const params: Record<string, string | number> = { page, size }
+  if (filters) {
+    for (const [k, v] of Object.entries(filters)) {
+      if (v) params[k] = v
+    }
+  }
+  return params
+}
+
 export default api

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { UserAdmin, UserAdminForm, UserRole } from '@/types/user'
 import type { Role } from '@/types/role'
 import { usersService } from '@/services/users'
@@ -27,8 +27,6 @@ export const useUsersStore = defineStore('users', () => {
   const total = ref(0)
   const pages = ref(0)
   const filterParams = ref<Record<string, string>>({})
-
-  const isEditing = computed(() => editingId.value !== null)
 
   async function fetchUsers() {
     loading.value = true
@@ -210,22 +208,6 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  async function uploadUserImage(id: number, file: File) {
-    saving.value = true
-    error.value = null
-    try {
-      const updated = await usersService.uploadImage(id, file)
-      const index = users.value.findIndex((u) => u.id === id)
-      if (index !== -1) {
-        users.value[index] = updated
-      }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Error al subir imagen'
-    } finally {
-      saving.value = false
-    }
-  }
-
   async function deleteUserImage(id: number) {
     saving.value = true
     error.value = null
@@ -260,7 +242,6 @@ export const useUsersStore = defineStore('users', () => {
     total,
     pages,
     filterParams,
-    isEditing,
     fetchUsers,
     fetchRoles,
     setFilter,
@@ -274,7 +255,6 @@ export const useUsersStore = defineStore('users', () => {
     openAssign,
     closeAssign,
     saveAssignRole,
-    uploadUserImage,
     deleteUserImage,
     reset,
   }

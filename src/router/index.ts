@@ -65,12 +65,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/sales/history',
-    name: 'sales-history',
-    component: () => import('@/views/SalesHistoryView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/:pathMatch(.*)*',
     redirect: '/products',
   },
@@ -94,22 +88,22 @@ router.beforeEach((to, _from, next) => {
 })
 
 const titles: Record<string, string> = {
-  auth: 'Iniciar sesión — Logistic System',
-  products: 'Productos — Logistic System',
-  shelves: 'Estanterías — Logistic System',
-  events: 'Eventos — Logistic System',
-  roles: 'Roles — Logistic System',
-  users: 'Usuarios — Logistic System',
-  categories: 'Categorías — Logistic System',
-  sales: 'Nueva venta — Logistic System',
-  'sales-history': 'Historial de ventas — Logistic System',
-  'verify-email': 'Verificar email — Logistic System',
-  'forgot-password': 'Recuperar contraseña — Logistic System',
-  'reset-password': 'Restablecer contraseña — Logistic System',
+  auth: 'Iniciar sesión',
+  products: 'Productos',
+  shelves: 'Estanterías',
+  events: 'Eventos',
+  roles: 'Roles',
+  users: 'Usuarios',
+  categories: 'Categorías',
+  sales: 'Nueva venta',
+  'verify-email': 'Verificar email',
+  'forgot-password': 'Recuperar contraseña',
+  'reset-password': 'Restablecer contraseña',
 }
 
 router.afterEach((to) => {
-  document.title = titles[to.name as string] ?? 'Logistic System'
+  const name = titles[to.name as string]
+  document.title = name ? `${name} — Logistic System` : 'Logistic System'
 })
 
 export default router

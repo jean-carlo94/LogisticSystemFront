@@ -36,5 +36,3 @@ const store = useRolesStore()
   </Transition>
 </template>
 
-<style scoped>
-</style>

@@ -220,17 +220,6 @@ async function submitForm() {
   border: 1px solid var(--border);
 }
 
-.image-upload-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.file-input {
-  width: auto;
-  font-size: 13px;
-}
-
 .drop-zone {
   display: flex;
   flex-direction: column;

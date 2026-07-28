@@ -1,16 +1,10 @@
-import api, { unwrap } from './api'
+import api, { unwrap, buildParams } from './api'
 import type { PaginatedResponse } from '@/types/pagination'
 import type { UserAdmin, UserAdminForm, UserRole } from '@/types/user'
 
 export const usersService = {
   async getAll(page = 1, size = 20, filters?: Record<string, string>): Promise<PaginatedResponse<UserAdmin>> {
-    const params: Record<string, string | number> = { page, size }
-    if (filters) {
-      for (const [k, v] of Object.entries(filters)) {
-        if (v) params[k] = v
-      }
-    }
-    return unwrap(api.get<PaginatedResponse<UserAdmin>>('/users/', { params }))
+    return unwrap(api.get<PaginatedResponse<UserAdmin>>('/users/', { params: buildParams(page, size, filters) }))
   },
 
   async update(id: number, data: UserAdminForm): Promise<UserAdmin> {

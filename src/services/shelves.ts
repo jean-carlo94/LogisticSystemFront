@@ -1,16 +1,10 @@
-import api, { unwrap } from './api'
+import api, { unwrap, buildParams } from './api'
 import type { Shelf, ShelfDetail, ShelfForm, ShelfItem } from '@/types/shelf'
 import type { PaginatedResponse } from '@/types/pagination'
 
 export const shelvesService = {
   async getAll(page = 1, size = 20, filters?: Record<string, string>): Promise<PaginatedResponse<Shelf>> {
-    const params: Record<string, string | number> = { page, size }
-    if (filters) {
-      for (const [k, v] of Object.entries(filters)) {
-        if (v) params[k] = v
-      }
-    }
-    return unwrap(api.get<PaginatedResponse<Shelf>>('/shelves', { params }))
+    return unwrap(api.get<PaginatedResponse<Shelf>>('/shelves', { params: buildParams(page, size, filters) }))
   },
 
   async getOne(id: number): Promise<ShelfDetail> {

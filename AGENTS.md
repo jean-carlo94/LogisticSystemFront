@@ -34,7 +34,6 @@ No meta-framework, no CSS framework, no Tailwind.
   - Every data table MUST have `scope="col"` on all `<th>` elements and `aria-label` on `<table>`
   - Every non-interactive clickable element (`<div @click>`) MUST have `role="button" tabindex="0"` plus `@keydown.enter` and `@keydown.space.prevent` handlers
   - Icon-only buttons (SVG without visible text) MUST have `aria-label`
-  - Use `.sr-only` class (defined in `style.css`) for visually-hidden labels when needed
   - `lang="es"` on `<html>` — UI is in Spanish
   - `document.title` is updated dynamically via `router.afterEach` in `src/router/index.ts`
 
@@ -138,7 +137,7 @@ const auth = useAuthStore()
 
 ### Theme system
 
-- `useTheme()` composable: `theme` ref, `toggle()`, `set()`
+- `useTheme()` composable: `theme` ref, `toggle()`
 - Persists to `localStorage('theme')`, auto-detects OS preference on first visit
 - CSS selectors: `[data-theme='light']` and `[data-theme='dark']`
 - CSS custom properties: `--text-primary`, `--bg-surface`, `--border`, `--accent`, etc.

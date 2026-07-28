@@ -1,15 +1,6 @@
-export type PermissionCode =
-  | 'products_create'
-  | 'products_read'
-  | 'products_update'
-  | 'products_delete'
-  | 'events_read'
-  | 'roles_manage'
-  | 'users_manage'
-
 export interface Permission {
   id: number
-  code: PermissionCode
+  code: string
   description: string
 }
 

@@ -366,13 +366,6 @@ async function removeAvatar() {
   align-self: flex-start;
 }
 
-.avatar-upload-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  align-self: flex-start;
-}
-
 .drop-zone {
   display: flex;
   flex-direction: column;

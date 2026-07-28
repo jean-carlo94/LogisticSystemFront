@@ -9,13 +9,11 @@ export interface SaleItem {
   subtotal: number
 }
 
-export type SaleStatus = 'pending' | 'completed' | 'cancelled'
-
 export interface Sale {
   id: number
   customer_name: string
   total: number
-  status: SaleStatus
+  status: 'pending' | 'completed' | 'cancelled'
   notes: string | null
   created_at: string
   created_by: number
@@ -25,14 +23,7 @@ export interface Sale {
 export interface CreateSalePayload {
   customer_name: string
   notes?: string
-  items: CreateSaleItemPayload[]
-}
-
-export interface CreateSaleItemPayload {
-  product_id: number
-  shelf_id: number
-  quantity: number
-  unit_price: number
+  items: { product_id: number; shelf_id: number; quantity: number; unit_price: number }[]
 }
 
 export interface ProductLocation {

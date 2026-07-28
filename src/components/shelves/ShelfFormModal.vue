@@ -75,5 +75,3 @@ const store = useShelvesStore()
   </Transition>
 </template>
 
-<style scoped>
-</style>
