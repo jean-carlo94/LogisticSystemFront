@@ -61,12 +61,12 @@ async function submit() {
         <template v-if="!done">
           <label class="field">
             <span>Nueva contraseña</span>
-            <input v-model="newPassword" type="password" required minlength="6" maxlength="128" placeholder="Minimo 6 caracteres" />
+            <input v-model="newPassword" type="password" required minlength="6" maxlength="128" autocomplete="new-password" placeholder="Minimo 6 caracteres" />
           </label>
 
           <label class="field">
             <span>Confirmar contraseña</span>
-            <input v-model="passwordConfirm" type="password" required minlength="6" maxlength="128" placeholder="Repite la contraseña" />
+            <input v-model="passwordConfirm" type="password" required minlength="6" maxlength="128" autocomplete="new-password" placeholder="Repite la contraseña" />
           </label>
 
           <button type="submit" class="btn btn-primary btn-full" :disabled="loading">

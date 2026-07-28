@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import router from '@/router'
 
 const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -27,7 +28,7 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token')
-      window.location.href = '/auth'
+      router.push('/auth')
       return Promise.reject(new Error('Sesion expirada'))
     }
 
@@ -37,7 +38,9 @@ api.interceptors.response.use(
       error.message ||
       'Error de conexion'
 
-    console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, message)
+    if (import.meta.env.DEV) {
+      console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, message)
+    }
 
     return Promise.reject(new Error(message))
   },

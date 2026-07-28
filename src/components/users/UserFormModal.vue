@@ -5,13 +5,24 @@ import { getMediaUrl } from '@/composables/useFormat'
 
 const store = useUsersStore()
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
+const imageError = ref<string | null>(null)
 const dropActive = ref(false)
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 
 function handleFile(file: File) {
-  if (!file.type.startsWith('image/')) return
+  imageError.value = null
+  if (!file.type.startsWith('image/')) {
+    imageError.value = 'Solo se permiten archivos de imagen'
+    return
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    imageError.value = 'La imagen no puede superar los 5 MB'
+    return
+  }
   imageFile.value = file
   imagePreview.value = URL.createObjectURL(file)
 }
@@ -45,6 +56,7 @@ async function submitForm() {
   await store.saveUser(imageFile.value)
   imageFile.value = null
   imagePreview.value = null
+  imageError.value = null
 }
 </script>
 
@@ -84,7 +96,7 @@ async function submitForm() {
           </div>
           <label class="field">
             <span>Nueva contraseña (dejar vacío para no cambiar)</span>
-            <input v-model="store.form.password" type="password" minlength="6" maxlength="128" placeholder="Mínimo 6 caracteres" />
+            <input v-model="store.form.password" type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
           </label>
 
           <div class="image-section">
@@ -107,7 +119,7 @@ async function submitForm() {
               @click="fileInput?.click()"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>{{ imageFile ? imageFile.name : 'Arrastra una imagen o haz clic aquí' }}</span>
+              <span>{{ imageFile ? imageFile.name : 'Arrastra una imagen o haz clic aquí (max. 5 MB)' }}</span>
               <input
                 ref="fileInput"
                 type="file"
@@ -116,6 +128,7 @@ async function submitForm() {
                 @change="onFileInput"
               />
             </div>
+            <div v-if="imageError" class="error-msg">{{ imageError }}</div>
           </div>
 
           <div class="actions">

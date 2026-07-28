@@ -17,8 +17,11 @@ const form = ref({
 const saving = ref(false)
 const localError = ref<string | null>(null)
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
 const avatarFile = ref<File | null>(null)
 const avatarPreview = ref<string | null>(null)
+const avatarError = ref<string | null>(null)
 const dropActive = ref(false)
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 
@@ -48,6 +51,7 @@ function openEdit() {
   }
   avatarFile.value = null
   avatarPreview.value = null
+  avatarError.value = null
   localError.value = null
   isEditing.value = true
 }
@@ -84,21 +88,37 @@ async function save() {
 }
 
 function onAvatarSelect(event: Event) {
+  avatarError.value = null
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
-  if (file && file.type.startsWith('image/')) {
-    avatarFile.value = file
-    avatarPreview.value = URL.createObjectURL(file)
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    avatarError.value = 'Solo se permiten archivos de imagen'
+    return
   }
+  if (file.size > MAX_IMAGE_SIZE) {
+    avatarError.value = 'La imagen no puede superar los 5 MB'
+    return
+  }
+  avatarFile.value = file
+  avatarPreview.value = URL.createObjectURL(file)
 }
 
 function onAvatarDrop(event: DragEvent) {
+  avatarError.value = null
   dropActive.value = false
   const file = event.dataTransfer?.files[0]
-  if (file && file.type.startsWith('image/')) {
-    avatarFile.value = file
-    avatarPreview.value = URL.createObjectURL(file)
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    avatarError.value = 'Solo se permiten archivos de imagen'
+    return
   }
+  if (file.size > MAX_IMAGE_SIZE) {
+    avatarError.value = 'La imagen no puede superar los 5 MB'
+    return
+  }
+  avatarFile.value = file
+  avatarPreview.value = URL.createObjectURL(file)
 }
 
 
@@ -170,7 +190,7 @@ async function removeAvatar() {
               @click="fileInput?.click()"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>{{ avatarFile ? avatarFile.name : 'Arrastra una imagen o haz clic aquí' }}</span>
+              <span>{{ avatarFile ? avatarFile.name : 'Arrastra una imagen o haz clic aquí (max. 5 MB)' }}</span>
               <input
                 ref="fileInput"
                 type="file"
@@ -179,6 +199,7 @@ async function removeAvatar() {
                 @change="onAvatarSelect"
               />
             </div>
+            <div v-if="avatarError" class="error-msg">{{ avatarError }}</div>
 
             <button
               v-if="store.user?.image_url && !avatarPreview"
@@ -215,7 +236,7 @@ async function removeAvatar() {
             </div>
             <label class="field">
               <span>Nueva contraseña (dejar vacío para no cambiar)</span>
-              <input v-model="form.password" type="password" minlength="6" maxlength="128" placeholder="Mínimo 6 caracteres" />
+              <input v-model="form.password" type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
             </label>
 
             <div v-if="localError" class="error-msg">{{ localError }}</div>

@@ -139,7 +139,18 @@ const auth = useAuthStore()
 - **Request**: reads `localStorage('access_token')`, injects `Authorization: Bearer`
 - **Response**: unwraps `response.data` so callers get body directly
 - **Error**: checks `data.detail` first, then `data.message`, then generic fallback
-- **401**: clears token from localStorage, redirects to `/auth`
+- **401**: clears token from localStorage, redirects to `/auth` via `router.push` (NOT `window.location.href`)
+- **Production logging**: `console.error` in the error interceptor is gated behind `import.meta.env.DEV`. Never log API URLs or methods unconditionally.
+
+### Security rules
+
+- **CSP**: `index.html` includes a Content-Security-Policy meta tag: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:* ws://localhost:*`. If you add new external resources (CDNs, analytics, third-party fonts/images), update the CSP or the app will break.
+- **No `v-html`, `innerHTML`, `eval()`, `Function()`** — Vue template interpolation escapes HTML automatically. Never bypass it. If rich text rendering is ever needed, use a sanitizer library (DOMPurify) and update the CSP.
+- **Password fields MUST have `autocomplete`** — `autocomplete="current-password"` for login forms, `autocomplete="new-password"` for registration, profile edits, and admin user forms.
+- **File upload validation** — every image upload component MUST validate MIME type (`file.type.startsWith('image/')`) AND enforce a 5 MB size limit (`MAX_IMAGE_SIZE = 5 * 1024 * 1024`). Show a user-facing error on rejection (never silently ignore). The backend is the authoritative validator; frontend checks are defense-in-depth.
+- **Error messages from API** — displayed via `{{ error }}` template interpolation (auto-escaped by Vue). Never reflect raw backend strings into `v-html` or attribute bindings without sanitization.
+- **No secrets in frontend code** — `.env` only contains `VITE_API_BASE_URL`. Never commit actual API keys, tokens, or credentials. The `.env.example` exists as a template.
+- **Tokens in query strings** — `VerifyEmailView` and `ResetPasswordView` read tokens via `route.query.token`. These tokens persist in browser history, server access logs, and may leak via `Referer` header. This is a known trade-off (the backend sends links with tokens in the URL). If the backend ever changes to hash fragments or POST-based token submission, update both views accordingly.
 
 ## API Reference
 

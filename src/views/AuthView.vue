@@ -92,12 +92,12 @@ function toggleMode() {
 
         <label class="field">
           <span>Contraseña</span>
-          <input v-model="password" type="password" required minlength="6" maxlength="128" placeholder="Mínimo 6 caracteres" />
+          <input v-model="password" type="password" required minlength="6" maxlength="128" :autocomplete="isRegister ? 'new-password' : 'current-password'" placeholder="Mínimo 6 caracteres" />
         </label>
 
         <label v-if="isRegister" class="field">
           <span>Confirmar contraseña</span>
-          <input v-model="passwordConfirm" type="password" required minlength="6" maxlength="128" placeholder="Repite la contraseña" />
+            <input v-model="passwordConfirm" type="password" required minlength="6" maxlength="128" autocomplete="new-password" placeholder="Repite la contraseña" />
         </label>
 
         <div v-if="isRegister" class="row">
