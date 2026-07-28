@@ -152,6 +152,25 @@ const auth = useAuthStore()
 - **No secrets in frontend code** — `.env` only contains `VITE_API_BASE_URL`. Never commit actual API keys, tokens, or credentials. The `.env.example` exists as a template.
 - **Tokens in query strings** — `VerifyEmailView` and `ResetPasswordView` read tokens via `route.query.token`. These tokens persist in browser history, server access logs, and may leak via `Referer` header. This is a known trade-off (the backend sends links with tokens in the URL). If the backend ever changes to hash fragments or POST-based token submission, update both views accordingly.
 
+## Production deployment
+
+```bash
+docker compose up prod -d          # frontend + backend + postgres
+docker compose up dev              # Vite dev server with HMR
+```
+
+### Architecture
+
+- **`nginx.conf`** — SPA fallback (`try_files $uri /index.html`), API proxy (`/api/` → `backend:8000`), strict CSP header (no `ws://` or `http://localhost:*`)
+- **`Dockerfile`** — two-stage: `node:22-alpine` builds the Vue app with `VITE_API_BASE_URL=/api/v1`, then `nginx:alpine` serves the static files with the nginx config
+- **`docker-compose.yml`** — `dev` (Vite HMR), `prod` (nginx + build), `backend` (placeholder), `db` (postgres:16)
+
+### CSP strategy
+
+- **Dev**: meta tag in `index.html` allows `http://localhost:*` and `ws://localhost:*` for API calls and HMR
+- **Prod**: nginx adds a stricter `Content-Security-Policy` header with only `connect-src 'self'` (API calls go through nginx proxy, same origin). The server header overrides the meta tag
+- If the backend domain is different from the frontend in prod, update both the nginx CSP header and the CSP meta tag
+
 ## API Reference
 
 Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
