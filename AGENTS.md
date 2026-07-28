@@ -28,6 +28,15 @@ No meta-framework, no CSS framework, no Tailwind.
 - **Store reset**: When login/logout occurs, `authStore` calls `resetAllStores()` which invokes `reset()` on all other stores (products, events, roles, users). Every new store MUST expose a `reset()` method that clears all state to initial values.
 - **CSS conventions**: Shared UI classes live in `src/style.css` (not duplicated in scoped blocks). Global classes include: `.page`, `.table-wrap`, `.overlay`, `.modal`, `.form`, `.field`, `.row`, `.actions`, `.btn-ghost`, `.empty-state`, `.error-banner`, `.id-cell`, `.date-cell`, `.actions-cell`, `.skeleton`, `.skeleton-table`, `.skeleton-row`. Component `<style scoped>` blocks should ONLY contain classes unique to that component.
 - **Logic reuse**: Common formatters live in `src/composables/useFormat.ts` (`formatDate`). User display name is a store computed (`authStore.displayName`). Do not duplicate these in components.
+- **Accessibility conventions**:
+  - Every filter input/select MUST have `aria-label` describing its purpose (e.g. `aria-label="Filtrar por nombre"`)
+  - Every modal MUST have `role="dialog" aria-modal="true" aria-labelledby="..."` on `.modal`, a matching `:id` on the `<h2>`, and `@keydown.escape` to close
+  - Every data table MUST have `scope="col"` on all `<th>` elements and `aria-label` on `<table>`
+  - Every non-interactive clickable element (`<div @click>`) MUST have `role="button" tabindex="0"` plus `@keydown.enter` and `@keydown.space.prevent` handlers
+  - Icon-only buttons (SVG without visible text) MUST have `aria-label`
+  - Use `.sr-only` class (defined in `style.css`) for visually-hidden labels when needed
+  - `lang="es"` on `<html>` — UI is in Spanish
+  - `document.title` is updated dynamically via `router.afterEach` in `src/router/index.ts`
 
 ## Architecture
 

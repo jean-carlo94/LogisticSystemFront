@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { UserAdmin, UserAdminForm, UserRoleSimple } from '@/types/user'
+import type { UserAdmin, UserAdminForm, UserRole } from '@/types/user'
 import type { Role } from '@/types/role'
 import { usersService } from '@/services/users'
 import { rolesService } from '@/services/roles'
@@ -9,7 +9,7 @@ import { useAutoClearError } from '@/composables/useAutoClearError'
 export const useUsersStore = defineStore('users', () => {
   const users = ref<UserAdmin[]>([])
   const roles = ref<Role[]>([])
-  const currentRoles = ref<UserRoleSimple[]>([])
+  const currentRoles = ref<UserRole[]>([])
   const form = ref<UserAdminForm>({})
   const editingId = ref<number | null>(null)
   const isFormOpen = ref(false)
@@ -94,6 +94,7 @@ export const useUsersStore = defineStore('users', () => {
     saving.value = false
     error.value = null
     page.value = 1
+    size.value = 20
     total.value = 0
     pages.value = 0
     filterParams.value = {}

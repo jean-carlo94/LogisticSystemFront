@@ -39,7 +39,7 @@ function visiblePages(): (number | '...')[] {
 <template>
   <div v-if="pages > 1 || total > 0" class="pagination">
     <div class="size-selector">
-      <select :value="size" @change="emit('resize', Number(($event.target as HTMLSelectElement).value))">
+      <select :value="size" aria-label="Cantidad de registros por página" @change="emit('resize', Number(($event.target as HTMLSelectElement).value))">
         <option v-for="s in sizes" :key="s" :value="s">{{ s }}</option>
       </select>
       <span class="info">{{ total }} registros</span>

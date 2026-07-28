@@ -89,6 +89,7 @@ export const useRolesStore = defineStore('roles', () => {
     saving.value = false
     error.value = null
     page.value = 1
+    size.value = 20
     total.value = 0
     pages.value = 0
     filterParams.value = {}

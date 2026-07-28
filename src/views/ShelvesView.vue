@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useShelvesStore } from '@/stores/shelves'
 import { useAuthStore } from '@/stores/auth'
@@ -61,6 +61,8 @@ function clearFilter() {
 
 const hasFilters = () => fCode.value || fName.value || fAisle.value || fRow.value || fLevel.value
 
+const isFeedbackError = computed(() => store.dropFeedback ? /Error|excede|ya está/.test(store.dropFeedback) : false)
+
 onMounted(async () => {
   await store.fetchShelves()
   const openId = route.query.open
@@ -89,15 +91,16 @@ onMounted(async () => {
     </div>
 
     <div class="filter-bar">
-      <input v-model="fCode" type="text" placeholder="Código" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fName" type="text" placeholder="Nombre" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fAisle" type="text" placeholder="Pasillo" class="filter-field filter-sm" @keyup.enter="doFilter" />
-      <input v-model="fRow" type="number" min="0" placeholder="Fila" class="filter-field filter-num" @keyup.enter="doFilter" />
-      <input v-model="fLevel" type="number" min="0" placeholder="Nivel" class="filter-field filter-num" @keyup.enter="doFilter" />
+      <input v-model="fCode" type="text" placeholder="Código" aria-label="Filtrar por código" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fName" type="text" placeholder="Nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fAisle" type="text" placeholder="Pasillo" aria-label="Filtrar por pasillo" class="filter-field filter-sm" @keyup.enter="doFilter" />
+      <input v-model="fRow" type="number" min="0" placeholder="Fila" aria-label="Filtrar por fila" class="filter-field filter-num" @keyup.enter="doFilter" />
+      <input v-model="fLevel" type="number" min="0" placeholder="Nivel" aria-label="Filtrar por nivel" class="filter-field filter-num" @keyup.enter="doFilter" />
       <input
         v-model="fProduct"
         type="text"
         placeholder="Buscar producto..."
+        aria-label="Filtrar por producto"
         class="filter-field filter-product"
         @keyup.enter="store.setProductFilter(fProduct)"
         @input="store.setProductFilter(fProduct)"
@@ -109,7 +112,7 @@ onMounted(async () => {
     <ShelfFormModal />
     <ShelfDetailModal />
 
-    <div v-if="store.dropFeedback" class="toast" :class="{ error: store.dropFeedback.includes('Error') || store.dropFeedback.includes('excede') || store.dropFeedback.includes('ya está') }">
+    <div v-if="store.dropFeedback" class="toast" :class="{ error: isFeedbackError }">
       {{ store.dropFeedback }}
     </div>
 

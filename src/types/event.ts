@@ -1,11 +1,11 @@
-export enum AuditAction {
+export const enum AuditAction {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
   STATUS_CHANGED = 'STATUS_CHANGED',
 }
 
-export enum EntityType {
+export const enum EntityType {
   Product = 'Product',
   User = 'User',
 }

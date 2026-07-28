@@ -1,4 +1,4 @@
-import api from './api'
+import api, { unwrap } from './api'
 import type { Product, ProductForm } from '@/types/product'
 import type { ProductLocation } from '@/types/sale'
 import type { PaginatedResponse } from '@/types/pagination'
@@ -11,38 +11,38 @@ export const productsService = {
         if (v) params[k] = v
       }
     }
-    return api.get('/products', { params }) as Promise<PaginatedResponse<Product>>
+    return unwrap(api.get<PaginatedResponse<Product>>('/products', { params }))
   },
 
   async create(data: ProductForm): Promise<Product> {
-    return api.post('/products', data) as Promise<Product>
+    return unwrap(api.post<Product>('/products', data))
   },
 
-  async update(id: number, data: ProductForm): Promise<Product> {
-    return api.put(`/products/${id}`, data) as Promise<Product>
+  async update(id: number, data: Partial<ProductForm>): Promise<Product> {
+    return unwrap(api.put<Product>(`/products/${id}`, data))
   },
 
   async remove(id: number): Promise<void> {
-    return api.delete(`/products/${id}`) as Promise<void>
+    return unwrap(api.delete<void>(`/products/${id}`))
   },
 
   async getOne(id: number): Promise<Product> {
-    return api.get(`/products/${id}`) as Promise<Product>
+    return unwrap(api.get<Product>(`/products/${id}`))
   },
 
   async uploadImage(id: number, file: File): Promise<Product> {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post(`/products/${id}/image`, formData, {
+    return unwrap(api.post<Product>(`/products/${id}/image`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-    }) as Promise<Product>
+    }))
   },
 
   async deleteImage(id: number): Promise<void> {
-    return api.delete(`/products/${id}/image`) as Promise<void>
+    return unwrap(api.delete<void>(`/products/${id}/image`))
   },
 
   async getLocations(id: number): Promise<ProductLocation[]> {
-    return api.get(`/products/${id}/locations`) as Promise<ProductLocation[]>
+    return unwrap(api.get<ProductLocation[]>(`/products/${id}/locations`))
   },
 }

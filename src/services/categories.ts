@@ -1,4 +1,4 @@
-import api from './api'
+import api, { unwrap } from './api'
 import type { Category, CategoryForm } from '@/types/category'
 import type { PaginatedResponse } from '@/types/pagination'
 
@@ -10,18 +10,18 @@ export const categoriesService = {
         if (v) params[k] = v
       }
     }
-    return api.get('/categories', { params }) as Promise<PaginatedResponse<Category>>
+    return unwrap(api.get<PaginatedResponse<Category>>('/categories', { params }))
   },
 
   async create(data: CategoryForm): Promise<Category> {
-    return api.post('/categories', data) as Promise<Category>
+    return unwrap(api.post<Category>('/categories', data))
   },
 
-  async update(id: number, data: CategoryForm): Promise<Category> {
-    return api.put(`/categories/${id}`, data) as Promise<Category>
+  async update(id: number, data: Partial<CategoryForm>): Promise<Category> {
+    return unwrap(api.put<Category>(`/categories/${id}`, data))
   },
 
   async remove(id: number): Promise<void> {
-    return api.delete(`/categories/${id}`) as Promise<void>
+    return unwrap(api.delete<void>(`/categories/${id}`))
   },
 }

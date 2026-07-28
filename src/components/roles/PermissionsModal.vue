@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRolesStore } from '@/stores/roles'
 import { useAuthStore } from '@/stores/auth'
 
 const store = useRolesStore()
 const auth = useAuthStore()
+
+const checkedIds = computed(() => new Set(store.rolePermissions.map(p => p.id)))
 
 function togglePermission(permId: number) {
   const ids = store.rolePermissions.map(p => p.id)
@@ -19,18 +22,24 @@ function togglePermission(permId: number) {
 <template>
   <Transition name="fade">
     <div v-if="store.isPermsOpen" class="overlay" @click.self="store.closePermissions()">
-      <div class="modal">
-        <h2>Permisos del rol</h2>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="permissions-title"
+        @keydown.escape="store.closePermissions()"
+      >
+        <h2 id="permissions-title">Permisos del rol</h2>
         <div class="perms-list">
           <label
             v-for="perm in store.permissions"
             :key="perm.id"
             class="perm-item"
-            :class="{ checked: store.rolePermissions.some(p => p.id === perm.id) }"
+            :class="{ checked: checkedIds.has(perm.id) }"
           >
             <input
               type="checkbox"
-              :checked="store.rolePermissions.some(p => p.id === perm.id)"
+              :checked="checkedIds.has(perm.id)"
               :disabled="!auth.hasPermission('roles_manage')"
               @change="togglePermission(perm.id)"
             />

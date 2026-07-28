@@ -15,8 +15,14 @@ function add(shelfId: number, shelfCode: string) {
 <template>
   <Transition name="fade">
     <div v-if="store.isShelfPickerOpen" class="overlay" @click.self="store.closeShelfPicker()">
-      <div class="modal shelf-picker-modal">
-        <h2>{{ store.selectedProduct?.name }}</h2>
+      <div
+        class="modal shelf-picker-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shelf-picker-title"
+        @keydown.escape="store.closeShelfPicker()"
+      >
+        <h2 id="shelf-picker-title">{{ store.selectedProduct?.name }}</h2>
         <p class="picker-subtitle">Selecciona una ubicación</p>
 
         <div v-if="store.locationsLoading" class="picker-loading">
@@ -41,6 +47,7 @@ function add(shelfId: number, shelfCode: string) {
                 class="qty-input"
                 min="1"
                 :max="loc.quantity"
+                aria-label="Cantidad a agregar al carrito"
               />
               <button class="btn btn-primary btn-sm" @click="add(loc.shelf_id, loc.code)">
                 Agregar

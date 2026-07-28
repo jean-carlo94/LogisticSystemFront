@@ -11,8 +11,14 @@ async function submitForm() {
 <template>
   <Transition name="fade">
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
-      <div class="modal">
-        <h2>{{ store.isEditing ? 'Editar categoría' : 'Nueva categoría' }}</h2>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="category-form-title"
+        @keydown.escape="store.closeForm()"
+      >
+        <h2 id="category-form-title">{{ store.isEditing ? 'Editar categoría' : 'Nueva categoría' }}</h2>
 
         <div v-if="store.error" class="error-banner">
           <span>{{ store.error }}</span>

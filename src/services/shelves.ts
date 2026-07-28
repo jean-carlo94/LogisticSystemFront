@@ -1,4 +1,4 @@
-import api from './api'
+import api, { unwrap } from './api'
 import type { Shelf, ShelfDetail, ShelfForm, ShelfItem } from '@/types/shelf'
 import type { PaginatedResponse } from '@/types/pagination'
 
@@ -10,34 +10,34 @@ export const shelvesService = {
         if (v) params[k] = v
       }
     }
-    return api.get('/shelves', { params }) as Promise<PaginatedResponse<Shelf>>
+    return unwrap(api.get<PaginatedResponse<Shelf>>('/shelves', { params }))
   },
 
   async getOne(id: number): Promise<ShelfDetail> {
-    return api.get(`/shelves/${id}`) as Promise<ShelfDetail>
+    return unwrap(api.get<ShelfDetail>(`/shelves/${id}`))
   },
 
   async create(data: ShelfForm): Promise<Shelf> {
-    return api.post('/shelves', data) as Promise<Shelf>
+    return unwrap(api.post<Shelf>('/shelves', data))
   },
 
   async update(id: number, data: Partial<ShelfForm>): Promise<Shelf> {
-    return api.put(`/shelves/${id}`, data) as Promise<Shelf>
+    return unwrap(api.put<Shelf>(`/shelves/${id}`, data))
   },
 
   async remove(id: number): Promise<void> {
-    return api.delete(`/shelves/${id}`) as Promise<void>
+    return unwrap(api.delete<void>(`/shelves/${id}`))
   },
 
   async addItem(shelfId: number, data: { product_id: number; quantity: number }): Promise<ShelfItem> {
-    return api.post(`/shelves/${shelfId}/items`, data) as Promise<ShelfItem>
+    return unwrap(api.post<ShelfItem>(`/shelves/${shelfId}/items`, data))
   },
 
   async updateItem(shelfId: number, itemId: number, data: { quantity: number }): Promise<ShelfItem> {
-    return api.put(`/shelves/${shelfId}/items/${itemId}`, data) as Promise<ShelfItem>
+    return unwrap(api.put<ShelfItem>(`/shelves/${shelfId}/items/${itemId}`, data))
   },
 
   async removeItem(shelfId: number, itemId: number): Promise<void> {
-    return api.delete(`/shelves/${shelfId}/items/${itemId}`) as Promise<void>
+    return unwrap(api.delete<void>(`/shelves/${shelfId}/items/${itemId}`))
   },
 }

@@ -23,18 +23,18 @@ function openShelf(shelfId: number) {
 <template>
   <div v-if="store.products.length > 0">
     <div class="table-wrap">
-      <table>
+      <table aria-label="Lista de productos">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Img</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Código</th>
-            <th>Estanterías</th>
-            <th>Estado</th>
-            <th v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')"></th>
+            <th scope="col">#</th>
+            <th scope="col">Img</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Precio</th>
+            <th scope="col">Stock</th>
+            <th scope="col">Código</th>
+            <th scope="col">Estanterías</th>
+            <th scope="col">Estado</th>
+            <th scope="col" v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')"></th>
           </tr>
         </thead>
         <tbody>

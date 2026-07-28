@@ -93,4 +93,23 @@ router.beforeEach((to, _from, next) => {
   }
 })
 
+const titles: Record<string, string> = {
+  auth: 'Iniciar sesión — Logistic System',
+  products: 'Productos — Logistic System',
+  shelves: 'Estanterías — Logistic System',
+  events: 'Eventos — Logistic System',
+  roles: 'Roles — Logistic System',
+  users: 'Usuarios — Logistic System',
+  categories: 'Categorías — Logistic System',
+  sales: 'Nueva venta — Logistic System',
+  'sales-history': 'Historial de ventas — Logistic System',
+  'verify-email': 'Verificar email — Logistic System',
+  'forgot-password': 'Recuperar contraseña — Logistic System',
+  'reset-password': 'Restablecer contraseña — Logistic System',
+}
+
+router.afterEach((to) => {
+  document.title = titles[to.name as string] ?? 'Logistic System'
+})
+
 export default router

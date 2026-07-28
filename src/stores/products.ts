@@ -195,6 +195,7 @@ export const useProductsStore = defineStore('products', () => {
     error.value = null
     saving.value = false
     page.value = 1
+    size.value = 10
     total.value = 0
     pages.value = 0
     filterParams.value = {}

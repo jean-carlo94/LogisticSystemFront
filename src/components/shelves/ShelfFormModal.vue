@@ -7,8 +7,14 @@ const store = useShelvesStore()
 <template>
   <Transition name="fade">
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
-      <div class="modal">
-        <h2>{{ store.isEditing ? 'Editar estantería' : 'Nueva estantería' }}</h2>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shelf-form-title"
+        @keydown.escape="store.closeForm()"
+      >
+        <h2 id="shelf-form-title">{{ store.isEditing ? 'Editar estantería' : 'Nueva estantería' }}</h2>
 
         <form @submit.prevent="store.saveShelf()" class="form">
           <div class="row">

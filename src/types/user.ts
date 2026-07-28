@@ -1,3 +1,5 @@
+import type { UserRole } from './auth'
+
 export interface UserAdmin {
   id: number
   email: string
@@ -14,11 +16,6 @@ export interface UserAdmin {
   updated_at: string
 }
 
-export interface UserRoleSimple {
-  id: number
-  name: string
-}
-
 export interface UserAdminForm {
   email?: string
   password?: string
@@ -29,3 +26,5 @@ export interface UserAdminForm {
   country?: string
   is_active?: boolean
 }
+
+export { type UserRole }

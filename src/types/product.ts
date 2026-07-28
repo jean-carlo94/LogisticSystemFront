@@ -1,4 +1,4 @@
-export enum ProductState {
+export const enum ProductState {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   NO_STOCK = 'NO_STOCK',

@@ -22,9 +22,7 @@ api.interceptors.request.use(
 )
 
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response.data
-  },
+  (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token')
@@ -45,5 +43,9 @@ api.interceptors.response.use(
     return Promise.reject(new Error(message))
   },
 )
+
+export function unwrap<T>(promise: Promise<AxiosResponse<T>>): Promise<T> {
+  return promise.then((r) => r.data)
+}
 
 export default api

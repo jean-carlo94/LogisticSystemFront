@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useShelvesStore } from '@/stores/shelves'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -47,15 +48,23 @@ function capacityClass(pct: number) {
   if (pct >= 70) return 'warn'
   return 'ok'
 }
+
+const currentVolumeL = computed(() => (store.selectedShelf?.current_volume_cm3 ?? 0) / 1000)
 </script>
 
 <template>
   <Transition name="fade">
     <div v-if="store.isDetailOpen && store.selectedShelf" class="overlay" @click.self="store.closeDetail()">
-      <div class="modal shelf-detail-modal">
+      <div
+        class="modal shelf-detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shelf-detail-title"
+        @keydown.escape="store.closeDetail()"
+      >
         <div class="detail-header">
           <div>
-            <h2>{{ store.selectedShelf.name }}</h2>
+            <h2 id="shelf-detail-title">{{ store.selectedShelf.name }}</h2>
             <p class="detail-sub">{{ store.selectedShelf.code }} — {{ shelfLocation() }}</p>
           </div>
           <div class="detail-actions">
@@ -87,10 +96,10 @@ function capacityClass(pct: number) {
             <div class="capacity-track">
               <div class="capacity-fill" :class="capacityClass(volumePct()!)" :style="{ width: volumePct() + '%' }"></div>
             </div>
-            <span class="capacity-label">Volumen: {{ (store.selectedShelf.current_volume_cm3 / 1000).toFixed(1) }} / {{ shelfVolumeL().toFixed(1) }} L ({{ volumePct() }}%)</span>
+            <span class="capacity-label">Volumen: {{ currentVolumeL.toFixed(1) }} / {{ shelfVolumeL().toFixed(1) }} L ({{ volumePct() }}%)</span>
           </div>
           <div v-else-if="shelfVolumeL() > 0" class="capacity-bar">
-            <span class="capacity-label no-limit">Volumen: {{ (store.selectedShelf.current_volume_cm3 / 1000).toFixed(1) }} L — sin límite</span>
+            <span class="capacity-label no-limit">Volumen: {{ currentVolumeL.toFixed(1) }} L — sin límite</span>
           </div>
         </div>
 
@@ -108,12 +117,12 @@ function capacityClass(pct: number) {
 
           <div v-else class="items-list">
             <div v-for="item in store.selectedShelf.items" :key="item.id" class="item-row">
-              <a class="item-name" @click="goToProduct(item.product_id)">{{ item.product_name }}</a>
+              <button class="item-name btn-ghost" @click="goToProduct(item.product_id)">{{ item.product_name }}</button>
               <div v-if="auth.hasPermission('shelves_update')" class="item-qty">
                 <button class="qty-btn" @click="store.updateItemQuantity(store.selectedShelf!.id, item.id, item.quantity - 1)">−</button>
                 <span class="qty-value">{{ item.quantity }}</span>
                 <button class="qty-btn" @click="store.updateItemQuantity(store.selectedShelf!.id, item.id, item.quantity + 1)">+</button>
-                <button class="btn btn-ghost danger qty-remove" @click="store.removeItem(store.selectedShelf!.id, item.id)">
+                <button class="btn btn-ghost danger qty-remove" @click="store.removeItem(store.selectedShelf!.id, item.id)" aria-label="Eliminar producto del estante">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>

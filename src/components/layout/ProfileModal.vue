@@ -136,14 +136,20 @@ async function removeAvatar() {
 <template>
   <Transition name="fade">
     <div class="overlay" @click.self="emit('close')">
-      <div class="modal profile-modal">
+      <div
+        class="modal profile-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-title"
+        @keydown.escape="emit('close')"
+      >
         <div v-if="!isEditing" class="view-mode">
           <div class="avatar-block">
             <img v-if="avatarSrc" :src="avatarSrc" alt="Avatar" class="avatar-img" />
             <div v-else class="avatar-placeholder">{{ avatarInitial }}</div>
           </div>
 
-          <h2>{{ store.displayName || '—' }}</h2>
+          <h2 id="profile-title">{{ store.displayName || '—' }}</h2>
           <p class="profile-email">{{ store.user?.email }}</p>
 
           <div class="profile-info">
@@ -177,17 +183,21 @@ async function removeAvatar() {
             <div v-else class="avatar-placeholder">{{ avatarInitial }}</div>
           </div>
 
-          <h2>Editar perfil</h2>
+          <h2 id="profile-title">Editar perfil</h2>
 
             <div class="avatar-section">
             <span class="avatar-section-label">Cambiar avatar</span>
 
             <div
               :class="['drop-zone', { 'drop-active': dropActive }]"
+              role="button"
+              tabindex="0"
               @dragover.prevent="dropActive = true"
               @dragleave="dropActive = false"
               @drop.prevent="onAvatarDrop"
               @click="fileInput?.click()"
+              @keydown.enter.prevent="fileInput?.click()"
+              @keydown.space.prevent="fileInput?.click()"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>{{ avatarFile ? avatarFile.name : 'Arrastra una imagen o haz clic aquí (max. 5 MB)' }}</span>

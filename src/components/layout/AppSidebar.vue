@@ -38,7 +38,7 @@ function logout() {
         <span v-if="!collapsed" class="brand-text">Logistic System</span>
         <span v-else class="brand-icon">LS</span>
       </router-link>
-      <button class="collapse-btn" @click="toggleSidebar()" :title="collapsed ? 'Expandir' : 'Colapsar'">
+      <button class="collapse-btn" @click="toggleSidebar()" :title="collapsed ? 'Expandir' : 'Colapsar'" :aria-expanded="!collapsed">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline v-if="collapsed" points="9 18 15 12 9 6"/>
           <polyline v-else points="15 18 9 12 15 6"/>
@@ -106,7 +106,7 @@ function logout() {
         <span v-if="!collapsed" class="footer-label">{{ theme === 'light' ? 'Claro' : 'Oscuro' }}</span>
       </button>
 
-      <div v-if="store.user && !collapsed" class="user-info" @click="isProfileOpen = true">
+      <div v-if="store.user && !collapsed" class="user-info" role="button" tabindex="0" :aria-expanded="isProfileOpen" aria-haspopup="dialog" @click="isProfileOpen = true" @keydown.enter="isProfileOpen = true" @keydown.space.prevent="isProfileOpen = true">
         <span class="user-name">{{ store.displayName }}</span>
         <span class="user-email">{{ store.user.email }}</span>
       </div>

@@ -11,14 +11,14 @@ const auth = useAuthStore()
 <template>
   <div v-if="store.categories.length > 0">
     <div class="table-wrap">
-      <table>
+      <table aria-label="Lista de categorías">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Fecha</th>
-            <th v-if="auth.hasPermission('categories_update') || auth.hasPermission('categories_delete')"></th>
+            <th scope="col">#</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Descripción</th>
+            <th scope="col">Fecha</th>
+            <th scope="col" v-if="auth.hasPermission('categories_update') || auth.hasPermission('categories_delete')"></th>
           </tr>
         </thead>
         <tbody>

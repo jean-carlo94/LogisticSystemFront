@@ -70,17 +70,17 @@ onMounted(() => {
     </div>
 
     <div class="filter-bar">
-      <input v-model="fEmail" type="text" placeholder="Email" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fFirst" type="text" placeholder="Nombre" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fLast" type="text" placeholder="Apellido" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fCity" type="text" placeholder="Ciudad" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fCountry" type="text" placeholder="País" class="filter-field" @keyup.enter="doFilter" />
-      <select v-model="fActive" class="filter-field" @change="doFilter">
+      <input v-model="fEmail" type="text" placeholder="Email" aria-label="Filtrar por email" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fFirst" type="text" placeholder="Nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fLast" type="text" placeholder="Apellido" aria-label="Filtrar por apellido" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fCity" type="text" placeholder="Ciudad" aria-label="Filtrar por ciudad" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fCountry" type="text" placeholder="País" aria-label="Filtrar por país" class="filter-field" @keyup.enter="doFilter" />
+      <select v-model="fActive" aria-label="Filtrar por estado activo" class="filter-field" @change="doFilter">
         <option value="">Activo?</option>
         <option value="true">Activo</option>
         <option value="false">Inactivo</option>
       </select>
-      <select v-model="fSuper" class="filter-field" @change="doFilter">
+      <select v-model="fSuper" aria-label="Filtrar por tipo de usuario" class="filter-field" @change="doFilter">
         <option value="">Tipo</option>
         <option value="true">Super Admin</option>
         <option value="false">Usuario normal</option>

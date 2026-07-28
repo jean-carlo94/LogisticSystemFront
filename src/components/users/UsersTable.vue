@@ -15,18 +15,18 @@ function fullName(user: { first_name: string | null; last_name: string | null })
 <template>
   <div v-if="store.users.length > 0">
     <div class="table-wrap">
-      <table>
+      <table aria-label="Lista de usuarios">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Avatar</th>
-            <th>Email</th>
-            <th>Nombre</th>
-            <th>Ciudad</th>
-            <th>Estado</th>
-            <th>Tipo</th>
-            <th>Creado</th>
-            <th v-if="auth.hasPermission('users_manage')"></th>
+            <th scope="col">#</th>
+            <th scope="col">Avatar</th>
+            <th scope="col">Email</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Ciudad</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Creado</th>
+            <th scope="col" v-if="auth.hasPermission('users_manage')"></th>
           </tr>
         </thead>
         <tbody>

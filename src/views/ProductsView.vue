@@ -77,16 +77,16 @@ onMounted(() => {
     <ProductForm />
 
     <div class="filter-bar">
-      <input v-model="fName" type="text" placeholder="Nombre" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fBarcode" type="text" placeholder="Código de barras" class="filter-field" @keyup.enter="doFilter" />
-      <select v-model="fState" class="filter-field" @change="doFilter">
+      <input v-model="fName" type="text" placeholder="Nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fBarcode" type="text" placeholder="Código de barras" aria-label="Filtrar por código de barras" class="filter-field" @keyup.enter="doFilter" />
+      <select v-model="fState" aria-label="Filtrar por estado" class="filter-field" @change="doFilter">
         <option value="">Estado</option>
         <option :value="ProductState.ACTIVE">Activo</option>
         <option :value="ProductState.INACTIVE">Inactivo</option>
         <option :value="ProductState.NO_STOCK">Sin stock</option>
         <option :value="ProductState.DISCONTINUED">Descontinuado</option>
       </select>
-      <input v-model="fStock" type="number" min="0" placeholder="Stock exacto" class="filter-field filter-num" @keyup.enter="doFilter" />
+      <input v-model="fStock" type="number" min="0" placeholder="Stock exacto" aria-label="Filtrar por stock exacto" class="filter-field filter-num" @keyup.enter="doFilter" />
       <button class="btn" @click="doFilter">Filtrar</button>
       <button v-if="hasFilters()" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>

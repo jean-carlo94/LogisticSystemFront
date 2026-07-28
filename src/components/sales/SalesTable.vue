@@ -9,15 +9,15 @@ const store = useSalesStore()
 <template>
   <div v-if="store.sales.length > 0">
     <div class="table-wrap">
-      <table>
+      <table aria-label="Historial de ventas">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Cliente</th>
-            <th>Total</th>
-            <th>Estado</th>
-            <th>Fecha</th>
-            <th></th>
+            <th scope="col">#</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Total</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Fecha</th>
+            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>

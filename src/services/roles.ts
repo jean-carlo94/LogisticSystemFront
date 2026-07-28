@@ -1,4 +1,4 @@
-import api from './api'
+import api, { unwrap } from './api'
 import type { PaginatedResponse } from '@/types/pagination'
 import type { Role, RoleForm, Permission, AssignPermissionsPayload } from '@/types/role'
 
@@ -10,30 +10,30 @@ export const rolesService = {
         if (v) params[k] = v
       }
     }
-    return api.get('/roles/', { params }) as Promise<PaginatedResponse<Role>>
+    return unwrap(api.get<PaginatedResponse<Role>>('/roles/', { params }))
   },
 
   async create(data: RoleForm): Promise<Role> {
-    return api.post('/roles/', data) as Promise<Role>
+    return unwrap(api.post<Role>('/roles/', data))
   },
 
-  async update(id: number, data: RoleForm): Promise<Role> {
-    return api.put(`/roles/${id}`, data) as Promise<Role>
+  async update(id: number, data: Partial<RoleForm>): Promise<Role> {
+    return unwrap(api.put<Role>(`/roles/${id}`, data))
   },
 
   async remove(id: number): Promise<void> {
-    return api.delete(`/roles/${id}`) as Promise<void>
+    return unwrap(api.delete<void>(`/roles/${id}`))
   },
 
   async getPermissions(): Promise<Permission[]> {
-    return api.get('/roles/permissions/') as Promise<Permission[]>
+    return unwrap(api.get<Permission[]>('/roles/permissions/'))
   },
 
   async getRolePermissions(roleId: number): Promise<Permission[]> {
-    return api.get(`/roles/${roleId}/permissions`) as Promise<Permission[]>
+    return unwrap(api.get<Permission[]>(`/roles/${roleId}/permissions`))
   },
 
   async setRolePermissions(roleId: number, data: AssignPermissionsPayload): Promise<void> {
-    return api.post(`/roles/${roleId}/permissions`, data) as Promise<void>
+    return unwrap(api.post<void>(`/roles/${roleId}/permissions`, data))
   },
 }

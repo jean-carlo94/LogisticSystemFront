@@ -18,15 +18,15 @@ function prettyJson(raw: string): string {
 <template>
   <div v-if="store.events.length > 0">
     <div class="table-wrap">
-      <table>
+      <table aria-label="Registro de eventos">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Entidad</th>
-            <th>Acción</th>
-            <th>Datos</th>
-            <th>Usuario</th>
-            <th>Fecha</th>
+            <th scope="col">#</th>
+            <th scope="col">Entidad</th>
+            <th scope="col">Acción</th>
+            <th scope="col">Datos</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Fecha</th>
           </tr>
         </thead>
         <tbody>

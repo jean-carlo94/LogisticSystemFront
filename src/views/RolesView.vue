@@ -57,8 +57,8 @@ onMounted(() => {
     </div>
 
     <div class="filter-bar">
-      <input v-model="fName" type="text" placeholder="Nombre del rol" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fDesc" type="text" placeholder="Descripción" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fName" type="text" placeholder="Nombre del rol" aria-label="Filtrar por nombre del rol" class="filter-field" @keyup.enter="doFilter" />
+      <input v-model="fDesc" type="text" placeholder="Descripción" aria-label="Filtrar por descripción" class="filter-field" @keyup.enter="doFilter" />
       <button class="btn" @click="doFilter">Filtrar</button>
       <button v-if="fName || fDesc" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>

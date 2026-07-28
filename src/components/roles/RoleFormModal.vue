@@ -7,8 +7,14 @@ const store = useRolesStore()
 <template>
   <Transition name="fade">
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
-      <div class="modal">
-        <h2>{{ store.isEditing ? 'Editar rol' : 'Nuevo rol' }}</h2>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="role-form-title"
+        @keydown.escape="store.closeForm()"
+      >
+        <h2 id="role-form-title">{{ store.isEditing ? 'Editar rol' : 'Nuevo rol' }}</h2>
         <form @submit.prevent="store.saveRole()" class="form">
           <label class="field">
             <span>Nombre</span>

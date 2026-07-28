@@ -43,7 +43,7 @@ onMounted(() => {
     <CategoryFormModal />
 
     <div class="filter-bar">
-      <input v-model="fName" type="text" placeholder="Buscar por nombre" class="filter-field" @keyup.enter="store.setFilter({ name: fName })" />
+      <input v-model="fName" type="text" placeholder="Buscar por nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="store.setFilter({ name: fName })" />
       <button v-if="fName" class="btn btn-ghost" @click="fName = ''; store.setFilter({})">Limpiar</button>
     </div>
 

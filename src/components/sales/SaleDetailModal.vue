@@ -8,8 +8,14 @@ const store = useSalesStore()
 <template>
   <Transition name="fade">
     <div v-if="store.isDetailOpen && store.selectedSale" class="overlay" @click.self="store.closeDetail()">
-      <div class="modal sale-detail-modal">
-        <h2>Venta #{{ store.selectedSale.id }}</h2>
+      <div
+        class="modal sale-detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sale-detail-title"
+        @keydown.escape="store.closeDetail()"
+      >
+        <h2 id="sale-detail-title">Venta #{{ store.selectedSale.id }}</h2>
 
         <div class="detail-info">
           <div class="detail-row">
@@ -37,14 +43,14 @@ const store = useSalesStore()
         <div v-if="store.selectedSale.items && store.selectedSale.items.length > 0" class="detail-items">
           <h4>Productos</h4>
           <div class="table-wrap detail-table">
-            <table>
+            <table aria-label="Productos de la venta">
               <thead>
                 <tr>
-                  <th>Producto</th>
-                  <th>Ubicación</th>
-                  <th>Cant.</th>
-                  <th>P. Unit.</th>
-                  <th>Subtotal</th>
+                  <th scope="col">Producto</th>
+                  <th scope="col">Ubicación</th>
+                  <th scope="col">Cant.</th>
+                  <th scope="col">P. Unit.</th>
+                  <th scope="col">Subtotal</th>
                 </tr>
               </thead>
               <tbody>

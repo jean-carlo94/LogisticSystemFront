@@ -1,4 +1,4 @@
-import api from './api'
+import api, { unwrap } from './api'
 import type { Event } from '@/types/event'
 import type { PaginatedResponse } from '@/types/pagination'
 
@@ -10,10 +10,10 @@ export const eventsService = {
         if (v) params[k] = v
       }
     }
-    return api.get('/events/', { params }) as Promise<PaginatedResponse<Event>>
+    return unwrap(api.get<PaginatedResponse<Event>>('/events/', { params }))
   },
 
   async getByProduct(productId: number, page = 1, size = 10): Promise<PaginatedResponse<Event>> {
-    return api.get(`/products/${productId}/events/`, { params: { page, size } }) as Promise<PaginatedResponse<Event>>
+    return unwrap(api.get<PaginatedResponse<Event>>(`/products/${productId}/events/`, { params: { page, size } }))
   },
 }

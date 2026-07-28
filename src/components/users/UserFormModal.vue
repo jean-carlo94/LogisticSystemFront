@@ -63,8 +63,14 @@ async function submitForm() {
 <template>
   <Transition name="fade">
     <div v-if="store.isFormOpen" class="overlay" @click.self="store.closeForm()">
-      <div class="modal user-form-modal">
-        <h2>Editar usuario</h2>
+      <div
+        class="modal user-form-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="user-form-title"
+        @keydown.escape="store.closeForm()"
+      >
+        <h2 id="user-form-title">Editar usuario</h2>
         <form @submit.prevent="submitForm()" class="form">
           <div class="row">
             <label class="field">
@@ -113,10 +119,14 @@ async function submitForm() {
 
             <div
               :class="['drop-zone', { 'drop-active': dropActive }]"
+              role="button"
+              tabindex="0"
               @dragover.prevent="dropActive = true"
               @dragleave="dropActive = false"
               @drop.prevent="onDrop"
               @click="fileInput?.click()"
+              @keydown.enter.prevent="fileInput?.click()"
+              @keydown.space.prevent="fileInput?.click()"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>{{ imageFile ? imageFile.name : 'Arrastra una imagen o haz clic aquí (max. 5 MB)' }}</span>

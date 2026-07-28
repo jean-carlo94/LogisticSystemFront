@@ -15,12 +15,12 @@ const store = useSalesStore()
 
     <label class="field cart-field">
       <span>Cliente</span>
-      <input v-model="store.customerName" type="text" placeholder="Nombre del cliente" />
+      <input v-model="store.customerName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente" />
     </label>
 
     <label class="field cart-field">
       <span>Notas</span>
-      <input v-model="store.notes" type="text" placeholder="Opcional" />
+      <input v-model="store.notes" type="text" placeholder="Opcional" aria-label="Notas de la venta" />
     </label>
 
     <div v-if="store.cart.length === 0" class="cart-empty">
@@ -54,6 +54,7 @@ const store = useSalesStore()
             min="0.01"
             step="0.01"
             class="price-input"
+            aria-label="Precio unitario del producto"
             @change="store.updateCartPrice(index, Number(($event.target as HTMLInputElement).value))"
           />
           <span class="cart-item-subtotal">{{ formatCurrency(item.unit_price * item.quantity) }}</span>

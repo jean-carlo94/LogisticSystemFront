@@ -20,6 +20,8 @@ const shelfVol = computed(() => {
   return props.shelf.width_cm * props.shelf.height_cm * props.shelf.depth_cm
 })
 
+const currentVolumeL = computed(() => (props.detail?.current_volume_cm3 ?? 0) / 1000)
+
 const volumePct = computed(() => {
   if (!props.detail || shelfVol.value <= 0) return null
   return Math.min(100, Math.round((props.detail.current_volume_cm3 / shelfVol.value) * 100))
@@ -53,7 +55,11 @@ function onDrop(event: DragEvent) {
 <template>
   <div
     :class="['shelf-card', { 'drop-target': dragover }]"
+    role="button"
+    tabindex="0"
     @click="store.openDetail(shelf.id)"
+    @keydown.enter="store.openDetail(shelf.id)"
+    @keydown.space.prevent="store.openDetail(shelf.id)"
     @dragover.prevent="dragover = true"
     @dragleave="dragover = false"
     @drop.prevent="onDrop"
@@ -80,10 +86,10 @@ function onDrop(event: DragEvent) {
         <div class="capacity-track">
           <div class="capacity-fill" :class="capacityClass(volumePct)" :style="{ width: volumePct + '%' }"></div>
         </div>
-        <span class="capacity-label">Vol: {{ (detail.current_volume_cm3 / 1000).toFixed(1) }} / {{ (shelfVol / 1000).toFixed(1) }} L</span>
+        <span class="capacity-label">Vol: {{ currentVolumeL.toFixed(1) }} / {{ (shelfVol / 1000).toFixed(1) }} L</span>
       </div>
       <div v-else-if="detail && shelfVol > 0" class="capacity-bar">
-        <span class="capacity-label no-limit">Vol: {{ (detail.current_volume_cm3 / 1000).toFixed(1) }} L — sin límite</span>
+        <span class="capacity-label no-limit">Vol: {{ currentVolumeL.toFixed(1) }} L — sin límite</span>
       </div>
     </div>
 

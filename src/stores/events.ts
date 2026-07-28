@@ -70,6 +70,7 @@ export const useEventsStore = defineStore('events', () => {
     loading.value = false
     error.value = null
     page.value = 1
+    size.value = 10
     total.value = 0
     pages.value = 0
     productFilterId.value = null

@@ -9,11 +9,13 @@ export interface SaleItem {
   subtotal: number
 }
 
+export type SaleStatus = 'pending' | 'completed' | 'cancelled'
+
 export interface Sale {
   id: number
   customer_name: string
   total: number
-  status: string
+  status: SaleStatus
   notes: string | null
   created_at: string
   created_by: number

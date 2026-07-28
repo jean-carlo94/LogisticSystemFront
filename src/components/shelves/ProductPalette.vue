@@ -55,10 +55,10 @@ function onDragStart(event: DragEvent, productId: number, productName: string, s
 </script>
 
 <template>
-  <aside class="product-palette">
+  <aside class="product-palette" role="dialog" aria-modal="true" aria-labelledby="product-palette-title">
     <div class="palette-header">
-      <h3>Productos</h3>
-      <button class="palette-close" @click="store.togglePalette()">
+      <h3 id="product-palette-title">Productos</h3>
+      <button class="palette-close" @click="store.togglePalette()" aria-label="Cerrar paleta de productos" :aria-expanded="store.isPaletteOpen">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -67,6 +67,7 @@ function onDragStart(event: DragEvent, productId: number, productName: string, s
       v-model="search"
       type="text"
       placeholder="Buscar producto..."
+      aria-label="Buscar producto en la paleta"
       class="palette-search"
     />
 
@@ -103,6 +104,7 @@ function onDragStart(event: DragEvent, productId: number, productName: string, s
             :value="getQty(product.id)"
             :min="1"
             :max="availableStock(product.id)"
+            aria-label="Cantidad del producto"
             @input="onQtyInput(product.id, $event)"
             @blur="onQtyInput(product.id, $event)"
             @keyup.enter="onQtyInput(product.id, $event)"

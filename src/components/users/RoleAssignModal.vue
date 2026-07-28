@@ -12,8 +12,14 @@ const checkedRoleIds = computed(() => store.currentRoles.map(r => r.id))
 <template>
   <Transition name="fade">
     <div v-if="store.isAssignOpen" class="overlay" @click.self="store.closeAssign()">
-      <div class="modal">
-        <h2>Asignar rol</h2>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="role-assign-title"
+        @keydown.escape="store.closeAssign()"
+      >
+        <h2 id="role-assign-title">Asignar rol</h2>
         <p v-if="targetUser" class="target-user">
           Usuario: <strong>{{ targetUser.email }}</strong>
         </p>
