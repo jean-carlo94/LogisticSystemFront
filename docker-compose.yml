@@ -10,12 +10,17 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      - VITE_CSP_ORIGINS=http://localhost:*
 
   prod:
     build:
       context: .
       args:
         VITE_API_BASE_URL: /api/v1
+        VITE_CSP_ORIGINS: ""
+    environment:
+      - CSP_IMG_ORIGINS=
+      - CSP_CONNECT_ORIGINS=
     ports:
       - "80:80"
     depends_on:

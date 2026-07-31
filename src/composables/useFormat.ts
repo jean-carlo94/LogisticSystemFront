@@ -19,5 +19,5 @@ export function getMediaUrl(path: string | null | undefined): string | null {
 }
 
 export function formatCurrency(amount: number): string {
-  return amount.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' })
+  return amount.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })
 }

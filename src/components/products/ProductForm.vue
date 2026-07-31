@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, useTemplateRef } from 'vue'
+import { ref, computed, watch, onUnmounted, useTemplateRef } from 'vue'
 import { useProductsStore } from '@/stores/products'
 import { ProductState } from '@/types/product'
+import type { Category } from '@/types/category'
+import { categoriesService } from '@/services/categories'
 import { getMediaUrl } from '@/composables/useFormat'
 
 const store = useProductsStore()
@@ -13,9 +15,12 @@ const stateOptions = [
   { value: ProductState.DISCONTINUED, label: 'Descontinuado' },
 ]
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const dropActive = ref(false)
+const imageError = ref<string | null>(null)
 
 const currentImageUrl = computed(() => {
   if (!store.editingId) return null
@@ -25,8 +30,74 @@ const currentImageUrl = computed(() => {
 
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 
+const categorySearch = ref('')
+const searchResults = ref<Category[]>([])
+const searchLoading = ref(false)
+const showCategoryDropdown = ref(false)
+const selectedCategories = ref<{ id: number; name: string }[]>([])
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+const unwatch = watch(() => store.isFormOpen, (open) => {
+  if (open) {
+    categorySearch.value = ''
+    searchResults.value = []
+    imageError.value = null
+    if (store.isEditing) {
+      const product = store.products.find((p) => p.id === store.editingId)
+      selectedCategories.value = product?.categories ?? []
+    } else {
+      selectedCategories.value = []
+    }
+  }
+})
+
+function onCategorySearch() {
+  if (searchTimer) clearTimeout(searchTimer)
+  const q = categorySearch.value.trim()
+  if (!q) {
+    searchResults.value = []
+    return
+  }
+  searchTimer = setTimeout(async () => {
+    searchLoading.value = true
+    try {
+      const res = await categoriesService.getAll(1, 10, { name: q })
+      searchResults.value = res.items.filter(
+        (c) => !store.form.category_ids.includes(c.id)
+      )
+    } catch {
+      searchResults.value = []
+    } finally {
+      searchLoading.value = false
+    }
+  }, 300)
+}
+
+function addCategory(cat: Category) {
+  store.form.category_ids.push(cat.id)
+  selectedCategories.value.push({ id: cat.id, name: cat.name })
+  categorySearch.value = ''
+  searchResults.value = []
+}
+
+function removeCategory(id: number) {
+  const idx = store.form.category_ids.indexOf(id)
+  if (idx !== -1) store.form.category_ids.splice(idx, 1)
+  const selIdx = selectedCategories.value.findIndex((c) => c.id === id)
+  if (selIdx !== -1) selectedCategories.value.splice(selIdx, 1)
+}
+
 function handleFile(file: File) {
-  if (!file.type.startsWith('image/')) return
+  if (!file.type.startsWith('image/')) {
+    imageError.value = 'Solo se permiten imágenes'
+    return
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    imageError.value = 'La imagen no debe superar 5 MB'
+    return
+  }
+  imageError.value = null
   imageFile.value = file
   imagePreview.value = URL.createObjectURL(file)
 }
@@ -55,6 +126,11 @@ async function submitForm() {
   imageFile.value = null
   imagePreview.value = null
 }
+
+onUnmounted(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+  unwatch()
+})
 </script>
 
 <template>
@@ -105,6 +181,52 @@ async function submitForm() {
             </select>
           </label>
 
+          <fieldset class="categories-fieldset">
+            <legend>Categorías</legend>
+
+            <div v-if="selectedCategories.length > 0" class="selected-categories">
+              <span v-for="cat in selectedCategories" :key="cat.id" class="category-chip">
+                {{ cat.name }}
+                <button
+                  type="button"
+                  class="chip-remove"
+                  :aria-label="'Quitar ' + cat.name"
+                  @click="removeCategory(cat.id)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </span>
+            </div>
+
+            <div class="category-search-wrap">
+              <input
+                v-model="categorySearch"
+                type="text"
+                class="category-search-input"
+                placeholder="Buscar categoría..."
+                aria-label="Buscar categoría para añadir"
+                @input="onCategorySearch"
+                @focus="showCategoryDropdown = true"
+                @blur="showCategoryDropdown = false"
+              />
+              <div v-if="showCategoryDropdown && searchResults.length > 0" class="category-dropdown">
+                <button
+                  v-for="cat in searchResults"
+                  :key="cat.id"
+                  type="button"
+                  class="category-dropdown-item"
+                  @mousedown.prevent="addCategory(cat)"
+                >
+                  {{ cat.name }}
+                </button>
+              </div>
+            </div>
+
+            <div v-if="searchLoading" class="categories-empty">Buscando...</div>
+          </fieldset>
+
           <fieldset class="dimensions-fieldset">
             <legend>Dimensiones y peso</legend>
             <div class="row">
@@ -131,6 +253,10 @@ async function submitForm() {
 
           <div class="image-section">
             <span class="image-section-label">Imagen del producto</span>
+
+            <div v-if="imageError" class="error-banner image-error">
+              <span>{{ imageError }}</span>
+            </div>
 
             <div v-if="currentImageUrl || imagePreview" class="image-preview-wrap">
               <img
@@ -190,6 +316,105 @@ async function submitForm() {
   padding: 0 6px;
 }
 
+.categories-fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px 10px;
+}
+
+.categories-fieldset legend {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0 6px;
+}
+
+.selected-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  padding: 3px 6px 3px 10px;
+  border-radius: 99px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+}
+
+.chip-remove:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.category-search-wrap {
+  position: relative;
+}
+
+.category-search-input {
+  width: 100% !important;
+  font-size: 13px !important;
+  padding: 7px 10px !important;
+}
+
+.category-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  margin-top: 2px;
+}
+
+.category-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.category-dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.categories-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .image-section {
   display: flex;
   flex-direction: column;
@@ -197,6 +422,10 @@ async function submitForm() {
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+}
+
+.image-error {
+  margin: 0;
 }
 
 .image-section-label {

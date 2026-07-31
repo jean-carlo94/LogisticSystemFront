@@ -7,13 +7,21 @@ defineProps<{
   product: Product
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   select: [product: Product]
+  quickAdd: [product: Product]
 }>()
 </script>
 
 <template>
-  <button class="product-card" @click="$emit('select', product)">
+  <div
+    class="product-card"
+    role="button"
+    tabindex="0"
+    @click="$emit('select', product)"
+    @keydown.enter="$emit('select', product)"
+    @keydown.space.prevent="$emit('select', product)"
+  >
     <img
       v-if="product.image_url"
       :src="getMediaUrl(product.image_url) || ''"
@@ -37,8 +45,20 @@ defineEmits<{
       <div v-if="product.categories.length > 0" class="card-categories">
         <span v-for="cat in product.categories" :key="cat.id" class="category-tag">{{ cat.name }}</span>
       </div>
+      <button
+        class="quick-add-btn"
+        :aria-label="'Agregar ' + product.name + ' al carrito'"
+        :title="'Agregar ' + product.name + ' al carrito'"
+        @click.stop="emit('quickAdd', product)"
+        @keydown.enter.stop="emit('quickAdd', product)"
+        @keydown.space.prevent.stop="emit('quickAdd', product)"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
     </div>
-  </button>
+  </div>
 </template>
 
 <style scoped>
@@ -142,5 +162,31 @@ defineEmits<{
   background: var(--accent-light);
   color: var(--accent);
   font-weight: 500;
+}
+
+.quick-add-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.product-card:hover .quick-add-btn {
+  opacity: 1;
+}
+
+.quick-add-btn:hover {
+  filter: brightness(1.1);
 }
 </style>

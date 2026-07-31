@@ -35,6 +35,7 @@ export interface ProductForm {
   width_cm: number
   height_cm: number
   depth_cm: number
+  category_ids: number[]
 }
 
 export function createEmptyProduct(): ProductForm {
@@ -49,5 +50,6 @@ export function createEmptyProduct(): ProductForm {
     width_cm: 0,
     height_cm: 0,
     depth_cm: 0,
+    category_ids: [],
   }
 }

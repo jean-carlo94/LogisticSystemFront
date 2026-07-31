@@ -43,8 +43,9 @@ No meta-framework, no CSS framework, no Tailwind.
 src/
   components/
     layout/          AppSidebar.vue, ProfileModal.vue
-    products/        ProductBadge.vue, ProductForm.vue (modal), ProductsTable.vue (table + pagination)
+    products/        ProductBadge.vue, ProductForm.vue (modal, on-demand category search), ProductsTable.vue (table + pagination)
     shelves/         ShelfCard.vue, ShelvesGrid.vue (grid + pagination), ShelfFormModal.vue, ShelfDetailModal.vue, ProductPalette.vue
+    sales/           ProductCard.vue, ProductSearch.vue (debounced search), SalesCart.vue, SalesTable.vue (table + pagination), ShelfPickerModal.vue (with "Sin estantería" option), SaleDetailModal.vue
     events/          EventBadge.vue, EventsTable.vue (table + pagination)
     roles/           RoleFormModal.vue, PermissionsModal.vue, RolesTable.vue (table + pagination)
     users/           UserFormModal.vue, RoleAssignModal.vue, UsersTable.vue (table + pagination)
@@ -57,7 +58,7 @@ src/
   views/             Page-level components (minimal wiring: header, state, table, modals)
                      AuthView, VerifyEmailView, ForgotPasswordView, ResetPasswordView
                      ProductsView, ShelvesView, EventsView, RolesView, UsersView
-                     CategoriesView, SalesView, SalesHistoryView
+                     CategoriesView, SalesView
 ```
 
 ### View pattern
@@ -152,12 +153,12 @@ const auth = useAuthStore()
 
 ### Security rules
 
-- **CSP**: `index.html` includes a Content-Security-Policy meta tag: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:* ws://localhost:*`. If you add new external resources (CDNs, analytics, third-party fonts/images), update the CSP or the app will break.
+- **CSP**: `index.html` includes a Content-Security-Policy meta tag using `%VITE_CSP_ORIGINS%` (set via `.env`, defaults to `http://localhost:*`). `ws://localhost:*` is always appended to `connect-src` for Vite HMR. If you add new external resources (CDNs, analytics, third-party fonts/images), update the CSP or the app will break.
 - **No `v-html`, `innerHTML`, `eval()`, `Function()`** — Vue template interpolation escapes HTML automatically. Never bypass it. If rich text rendering is ever needed, use a sanitizer library (DOMPurify) and update the CSP.
 - **Password fields MUST have `autocomplete`** — `autocomplete="current-password"` for login forms, `autocomplete="new-password"` for registration, profile edits, and admin user forms.
 - **File upload validation** — every image upload component MUST validate MIME type (`file.type.startsWith('image/')`) AND enforce a 5 MB size limit (`MAX_IMAGE_SIZE = 5 * 1024 * 1024`). Show a user-facing error on rejection (never silently ignore). The backend is the authoritative validator; frontend checks are defense-in-depth.
 - **Error messages from API** — displayed via `{{ error }}` template interpolation (auto-escaped by Vue). Never reflect raw backend strings into `v-html` or attribute bindings without sanitization.
-- **No secrets in frontend code** — `.env` only contains `VITE_API_BASE_URL`. Never commit actual API keys, tokens, or credentials. The `.env.example` exists as a template.
+- **No secrets in frontend code** — `.env` only contains `VITE_API_BASE_URL` and `VITE_CSP_ORIGINS`. Never commit actual API keys, tokens, or credentials. The `.env.example` exists as a template.
 - **Tokens in query strings** — `VerifyEmailView` and `ResetPasswordView` read tokens via `route.query.token`. These tokens persist in browser history, server access logs, and may leak via `Referer` header. This is a known trade-off (the backend sends links with tokens in the URL). If the backend ever changes to hash fragments or POST-based token submission, update both views accordingly.
 
 ## Production deployment
@@ -169,15 +170,16 @@ docker compose up dev              # Vite dev server with HMR
 
 ### Architecture
 
-- **`nginx.conf`** — SPA fallback (`try_files $uri /index.html`), API proxy (`/api/` → `backend:8000`), strict CSP header (no `ws://` or `http://localhost:*`)
-- **`Dockerfile`** — two-stage: `node:22-alpine` builds the Vue app with `VITE_API_BASE_URL=/api/v1`, then `nginx:alpine` serves the static files with the nginx config
+- **`nginx.conf`** — SPA fallback (`try_files $uri /index.html`), API proxy (`/api/` → `backend:8000`), CSP header with `${CSP_IMG_ORIGINS}` and `${CSP_CONNECT_ORIGINS}` placeholders (processed by `envsubst` at startup)
+- **`Dockerfile`** — two-stage: `node:22-alpine` builds the Vue app with `VITE_API_BASE_URL=/api/v1` and `VITE_CSP_ORIGINS`, then `nginx:alpine` + `gettext` serves via envsubst-processed nginx config
 - **`docker-compose.yml`** — `dev` (Vite HMR), `prod` (nginx + build), `backend` (placeholder), `db` (postgres:16)
 
 ### CSP strategy
 
-- **Dev**: meta tag in `index.html` allows `http://localhost:*` and `ws://localhost:*` for API calls and HMR
-- **Prod**: nginx adds a stricter `Content-Security-Policy` header with only `connect-src 'self'` (API calls go through nginx proxy, same origin). The server header overrides the meta tag
-- If the backend domain is different from the frontend in prod, update both the nginx CSP header and the CSP meta tag
+- **Dev**: meta tag in `index.html` uses `%VITE_CSP_ORIGINS%` (from `.env`, default `http://localhost:*`) + `ws://localhost:*` for HMR
+- **Prod**: nginx CSP header is templated via `envsubst`: `${CSP_IMG_ORIGINS}` and `${CSP_CONNECT_ORIGINS}` env vars (both default empty, same-origin proxy). The server header overrides the meta tag
+- **Build arg**: `VITE_CSP_ORIGINS` (defaults to empty string in prod build, keeps CSP strict)
+- If the backend domain is different from the frontend in prod, set `CSP_IMG_ORIGINS`/`CSP_CONNECT_ORIGINS` env vars and the `VITE_CSP_ORIGINS` build arg
 
 ## API Reference
 
@@ -196,17 +198,30 @@ Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
 ### Products (protected)
 
 - `GET /products/` — paginated list
-- `POST /products/` — create, required: `name`, `price`; optional: `description`, `stock`, `state`
+- `POST /products/` — create, required: `name`, `price`; optional: `description`, `stock`, `state`, `category_ids`, `barcode`, `weight_kg`, `width_cm`, `height_cm`, `depth_cm`
 - `PUT /products/{id}` — partial update
 - `DELETE /products/{id}`
 
 **Validation:** `name` min 1 max 200 (strip), `price` gt 0 (round 2), `stock` ge 0 (clamp), `state` enum `ACTIVE|INACTIVE|NO_STOCK|DISCONTINUED`. Setting `stock=0` forces `state → NO_STOCK`.
+
+### Categories
+
+- `GET /categories/` — paginated list, supports `?name=` filter (used by ProductForm for on-demand search)
+- `POST /categories/` — create `{ name, description? }`
+- `PUT /categories/{id}` — update
+- `DELETE /categories/{id}`
 
 ### Events (read-only)
 
 - `GET /events/` — paginated list
 - `GET /events/{id}` — single
 - `GET /Product/{id}/events/` | `GET /User/{id}/events/`
+
+### Sales
+
+- `GET /sales/` — paginated list
+- `GET /sales/{id}` — single sale with items
+- `POST /sales/` — create `{ customer_name, notes?, items: [{ product_id, shelf_id?, quantity, unit_price }] }`. If `shelf_id` is omitted/null, only product stock is reduced. If present, both shelf quantity and product stock are reduced.
 
 ### Roles
 

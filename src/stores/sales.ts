@@ -179,6 +179,50 @@ export const useSalesStore = defineStore('sales', () => {
     closeShelfPicker()
   }
 
+  function addToCartDirect(product: Product) {
+    const existingIndex = cart.value.findIndex(
+      (item) => item.product_id === product.id && item.shelf_id === null
+    )
+
+    if (existingIndex !== -1) {
+      cart.value[existingIndex].quantity += 1
+    } else {
+      cart.value.push({
+        product_id: product.id,
+        product_name: product.name,
+        shelf_id: null,
+        shelf_code: null,
+        quantity: 1,
+        unit_price: product.price,
+        stock: product.stock,
+      })
+    }
+  }
+
+  function addToCartWithoutShelf(quantity: number) {
+    if (!selectedProduct.value) return
+
+    const existingIndex = cart.value.findIndex(
+      (item) => item.product_id === selectedProduct.value!.id && item.shelf_id === null
+    )
+
+    if (existingIndex !== -1) {
+      cart.value[existingIndex].quantity += quantity
+    } else {
+      cart.value.push({
+        product_id: selectedProduct.value.id,
+        product_name: selectedProduct.value.name,
+        shelf_id: null,
+        shelf_code: null,
+        quantity,
+        unit_price: selectedProduct.value.price,
+        stock: selectedProduct.value.stock,
+      })
+    }
+
+    closeShelfPicker()
+  }
+
   function removeFromCart(index: number) {
     cart.value.splice(index, 1)
   }
@@ -215,7 +259,7 @@ export const useSalesStore = defineStore('sales', () => {
         notes: notes.value.trim() || undefined,
         items: cart.value.map((item) => ({
           product_id: item.product_id,
-          shelf_id: item.shelf_id,
+          shelf_id: item.shelf_id ?? undefined,
           quantity: item.quantity,
           unit_price: item.unit_price,
         })),
@@ -291,6 +335,8 @@ export const useSalesStore = defineStore('sales', () => {
     fetchLocations,
     closeShelfPicker,
     addToCart,
+    addToCartDirect,
+    addToCartWithoutShelf,
     removeFromCart,
     updateCartQuantity,
     updateCartPrice,

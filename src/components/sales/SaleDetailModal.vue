@@ -56,7 +56,7 @@ const store = useSalesStore()
               <tbody>
                 <tr v-for="item in store.selectedSale.items" :key="item.id">
                   <td class="name-cell">{{ item.product_name }}</td>
-                  <td class="muted">{{ item.shelf_code }}</td>
+                  <td class="muted">{{ item.shelf_code ?? 'Sin estantería' }}</td>
                   <td>{{ item.quantity }}</td>
                   <td>{{ formatCurrency(item.unit_price) }}</td>
                   <td class="price-cell">{{ formatCurrency(item.subtotal) }}</td>

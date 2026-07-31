@@ -79,6 +79,7 @@ onUnmounted(() => {
         :key="product.id"
         :product="product"
         @select="selectProduct"
+        @quick-add="store.addToCartDirect"
       />
     </div>
 

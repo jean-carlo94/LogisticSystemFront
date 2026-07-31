@@ -52,6 +52,9 @@ function openShelf(shelfId: number) {
             <td>
               <span class="product-name">{{ product.name }}</span>
               <span v-if="product.description" class="product-desc">{{ product.description }}</span>
+              <div v-if="product.categories.length > 0" class="product-categories">
+                <span v-for="cat in product.categories" :key="cat.id" class="category-tag">{{ cat.name }}</span>
+              </div>
             </td>
             <td class="price-cell">{{ formatCurrency(product.price) }}</td>
             <td>{{ product.stock }}</td>
@@ -93,6 +96,22 @@ function openShelf(shelfId: number) {
 .product-desc {
   display: block; font-size: 12px; color: var(--text-muted);
   margin-top: 2px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.product-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.category-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 500;
 }
 
 .price-cell { font-weight: 500; font-variant-numeric: tabular-nums; }

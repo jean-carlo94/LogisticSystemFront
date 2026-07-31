@@ -5,10 +5,18 @@ import { useSalesStore } from '@/stores/sales'
 const store = useSalesStore()
 const quantity = ref(1)
 
+const noShelfQty = ref(1)
+
 function add(shelfId: number, shelfCode: string) {
   if (quantity.value < 1) return
   store.addToCart(shelfId, shelfCode, quantity.value)
   quantity.value = 1
+}
+
+function addWithoutShelf() {
+  if (noShelfQty.value < 1) return
+  store.addToCartWithoutShelf(noShelfQty.value)
+  noShelfQty.value = 1
 }
 </script>
 
@@ -29,11 +37,31 @@ function add(shelfId: number, shelfCode: string) {
           Cargando ubicaciones...
         </div>
 
-        <div v-else-if="store.locations.length === 0" class="empty-state picker-empty">
-          <p>Este producto no está asignado a ninguna estantería.</p>
-        </div>
-
         <div v-else class="locations-list">
+          <div class="location-item no-shelf-item">
+            <div class="location-info">
+              <span class="location-code no-shelf-label">Sin estantería</span>
+              <span class="location-detail">Solo descuenta del stock del producto</span>
+            </div>
+            <div class="location-add">
+              <input
+                v-model.number="noShelfQty"
+                type="number"
+                class="qty-input"
+                min="1"
+                :max="store.selectedProduct?.stock ?? 0"
+                aria-label="Cantidad sin estantería"
+              />
+              <button class="btn btn-primary btn-sm" @click="addWithoutShelf()">
+                Agregar
+              </button>
+            </div>
+          </div>
+
+          <div v-if="store.locations.length === 0" class="empty-state picker-empty">
+            <p>Este producto no tiene ubicaciones asignadas.</p>
+          </div>
+
           <div v-for="loc in store.locations" :key="loc.shelf_id" class="location-item">
             <div class="location-info">
               <span class="location-code">{{ loc.code }}</span>
@@ -134,6 +162,17 @@ function add(shelfId: number, shelfCode: string) {
 .btn-sm {
   padding: 6px 14px;
   font-size: 13px;
+}
+
+.no-shelf-item {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: var(--accent-light);
+  margin-bottom: 12px;
+}
+
+.no-shelf-label {
+  color: var(--accent);
 }
 
 .picker-loading {

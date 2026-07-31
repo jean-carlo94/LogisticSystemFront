@@ -32,7 +32,7 @@ const store = useSalesStore()
     </div>
 
     <div v-else class="cart-items">
-      <div v-for="(item, index) in store.cart" :key="`${item.product_id}-${item.shelf_id}`" class="cart-item">
+      <div v-for="(item, index) in store.cart" :key="`${item.product_id}-${item.shelf_id ?? 'noshelf'}`" class="cart-item">
         <div class="cart-item-header">
           <span class="cart-item-name">{{ item.product_name }}</span>
           <button class="cart-item-remove" @click="store.removeFromCart(index)" title="Quitar">
@@ -41,7 +41,7 @@ const store = useSalesStore()
             </svg>
           </button>
         </div>
-        <span class="cart-item-shelf">{{ item.shelf_code }}</span>
+        <span class="cart-item-shelf" :class="{ 'no-shelf': item.shelf_id === null }">{{ item.shelf_code ?? 'Sin estantería' }}</span>
         <div class="cart-item-controls">
           <div class="qty-control">
             <button class="qty-btn" @click="store.updateCartQuantity(index, item.quantity - 1)">−</button>
@@ -162,6 +162,12 @@ const store = useSalesStore()
   color: var(--accent);
   font-family: var(--mono);
   font-weight: 500;
+}
+
+.cart-item-shelf.no-shelf {
+  color: var(--text-muted);
+  font-family: inherit;
+  font-style: italic;
 }
 
 .cart-item-controls {

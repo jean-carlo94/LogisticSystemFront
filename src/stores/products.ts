@@ -75,6 +75,7 @@ export const useProductsStore = defineStore('products', () => {
       width_cm: product.width_cm,
       height_cm: product.height_cm,
       depth_cm: product.depth_cm,
+      category_ids: product.categories.map((c) => c.id),
     }
     editingId.value = product.id
     isFormOpen.value = true
@@ -114,8 +115,8 @@ export const useProductsStore = defineStore('products', () => {
         closeForm()
       } else {
         const created = await productsService.create(form.value)
-        editingId.value = created.id
         productId = created.id
+        closeForm()
       }
 
       if (image) {

@@ -2,8 +2,8 @@ export interface SaleItem {
   id: number
   product_id: number
   product_name: string
-  shelf_id: number
-  shelf_code: string
+  shelf_id: number | null
+  shelf_code: string | null
   quantity: number
   unit_price: number
   subtotal: number
@@ -23,7 +23,7 @@ export interface Sale {
 export interface CreateSalePayload {
   customer_name: string
   notes?: string
-  items: { product_id: number; shelf_id: number; quantity: number; unit_price: number }[]
+  items: { product_id: number; shelf_id?: number | null; quantity: number; unit_price: number }[]
 }
 
 export interface ProductLocation {
@@ -38,8 +38,8 @@ export interface ProductLocation {
 export interface CartItem {
   product_id: number
   product_name: string
-  shelf_id: number
-  shelf_code: string
+  shelf_id: number | null
+  shelf_code: string | null
   quantity: number
   unit_price: number
   stock: number
