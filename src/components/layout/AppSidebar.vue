@@ -18,6 +18,7 @@ const links = computed(() => {
     { to: '/categories', label: 'Categorías', icon: 'tag', show: store.hasPermission('categories_read') },
     { to: '/shelves', label: 'Estanterías', icon: 'package', show: store.hasPermission('shelves_read') },
     { to: '/sales', label: 'Ventas', icon: 'cart', show: store.hasPermission('sales_read') },
+    { to: '/orders', label: 'Pedidos', icon: 'clipboard', show: store.hasPermission('orders_read') },
     { to: '/events', label: 'Eventos', icon: 'clock', show: store.hasPermission('events_read') },
     { to: '/roles', label: 'Roles', icon: 'shield', show: store.hasPermission('roles_manage') },
     { to: '/users', label: 'Usuarios', icon: 'users', show: store.hasPermission('users_manage') },
@@ -77,6 +78,10 @@ function logout() {
           <line x1="3" y1="10" x2="3" y2="17"/>
           <line x1="8" y1="7" x2="8" y2="10"/>
           <line x1="16" y1="7" x2="16" y2="10"/>
+        </svg>
+        <svg v-else-if="link.icon === 'clipboard'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
         </svg>
         <svg v-else-if="link.icon === 'clock'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>

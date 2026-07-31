@@ -65,6 +65,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/orders',
+    name: 'orders',
+    component: () => import('@/views/OrdersView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/products',
   },
@@ -96,6 +102,7 @@ const titles: Record<string, string> = {
   users: 'Usuarios',
   categories: 'Categorías',
   sales: 'Nueva venta',
+  orders: 'Pedidos',
   'verify-email': 'Verificar email',
   'forgot-password': 'Recuperar contraseña',
   'reset-password': 'Restablecer contraseña',

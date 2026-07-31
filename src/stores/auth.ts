@@ -9,6 +9,7 @@ import { useUsersStore } from '@/stores/users'
 import { useShelvesStore } from '@/stores/shelves'
 import { useCategoriesStore } from '@/stores/categories'
 import { useSalesStore } from '@/stores/sales'
+import { useOrdersStore } from '@/stores/orders'
 import { useAutoClearError } from '@/composables/useAutoClearError'
 
 function resetAllStores() {
@@ -19,6 +20,7 @@ function resetAllStores() {
   useShelvesStore().reset()
   useCategoriesStore().reset()
   useSalesStore().reset()
+  useOrdersStore().reset()
 }
 
 export const useAuthStore = defineStore('auth', () => {
