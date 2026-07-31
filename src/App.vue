@@ -17,7 +17,7 @@ const showSidebar = computed(() => authStore.isAuthenticated && route.name !== '
   <main :class="{ 'with-sidebar': showSidebar, collapsed }">
     <router-view v-slot="{ Component }">
       <Transition name="page" mode="out-in">
-        <component :is="Component" />
+        <component :is="Component" :key="authStore.tenantKey" />
       </Transition>
     </router-view>
   </main>

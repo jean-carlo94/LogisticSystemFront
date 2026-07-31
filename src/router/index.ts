@@ -71,6 +71,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/tenants',
+    name: 'tenants',
+    component: () => import('@/views/TenantsView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/taxes',
+    name: 'taxes',
+    component: () => import('@/views/TaxesView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/products',
   },
@@ -103,6 +115,8 @@ const titles: Record<string, string> = {
   categories: 'Categorías',
   sales: 'Nueva venta',
   orders: 'Pedidos',
+  tenants: 'Tenants',
+  taxes: 'Impuestos',
   'verify-email': 'Verificar email',
   'forgot-password': 'Recuperar contraseña',
   'reset-password': 'Restablecer contraseña',

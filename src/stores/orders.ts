@@ -36,12 +36,27 @@ export const useOrdersStore = defineStore('orders', () => {
   const shelfLocationsLoading = ref(false)
 
   const customerName = ref('')
+  const customerEmail = ref('')
+  const customerPhone = ref('')
+  const customerDocument = ref('')
+  const customerAddress = ref('')
   const notes = ref('')
+
+  const boardFilter = ref('')
+  const boardDate = ref(new Date().toISOString().slice(0, 10))
 
   let searchTimer: ReturnType<typeof setTimeout> | null = null
 
   const orderTotal = computed(() =>
     formItems.value.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
+  )
+
+  const orderTaxTotal = computed(() =>
+    formItems.value.reduce((sum, item) => {
+      const subtotal = item.unit_price * item.quantity
+      const taxRate = (item.taxes ?? []).reduce((r, t) => r + t.rate, 0)
+      return sum + (subtotal * taxRate) / 100
+    }, 0)
   )
 
   const canTransition = computed(() => (from: string, to: string) => {
@@ -52,6 +67,64 @@ export const useOrdersStore = defineStore('orders', () => {
     }
     return transitions[from]?.includes(to) ?? false
   })
+
+  interface BoardColumn {
+    items: Order[]
+    page: number
+    hasMore: boolean
+    loading: boolean
+  }
+
+  const BOARD_STATUSES = ['CREATED', 'PREPARING', 'READY', 'DELIVERED'] as const
+
+  const boardColumns = ref<Record<string, BoardColumn>>({
+    CREATED: { items: [], page: 1, hasMore: true, loading: false },
+    PREPARING: { items: [], page: 1, hasMore: true, loading: false },
+    READY: { items: [], page: 1, hasMore: true, loading: false },
+    DELIVERED: { items: [], page: 1, hasMore: true, loading: false },
+  })
+
+  function _initColumn(): BoardColumn {
+    return { items: [], page: 1, hasMore: true, loading: false }
+  }
+
+  function resetBoardColumns() {
+    for (const s of BOARD_STATUSES) {
+      boardColumns.value[s] = _initColumn()
+    }
+    for (const s of BOARD_STATUSES) {
+      fetchBoardColumn(s)
+    }
+  }
+
+  async function fetchBoardColumn(status: string) {
+    const col = boardColumns.value[status]
+    if (!col || col.loading || !col.hasMore) return
+    col.loading = true
+    try {
+      const filters: Record<string, string> = { status }
+      if (boardFilter.value.trim()) filters.customer_name = boardFilter.value.trim()
+      if (boardDate.value) filters.created_at = boardDate.value
+      const res = await ordersService.getAll(col.page, 20, filters)
+      col.items.push(...res.items)
+      col.page++
+      col.hasMore = col.page <= res.pages
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al cargar columna'
+    } finally {
+      col.loading = false
+    }
+  }
+
+  function setBoardFilter(filter: string) {
+    boardFilter.value = filter
+    resetBoardColumns()
+  }
+
+  function setBoardDate(date: string) {
+    boardDate.value = date
+    resetBoardColumns()
+  }
 
   async function fetchOrders() {
     loading.value = true
@@ -88,6 +161,10 @@ export const useOrdersStore = defineStore('orders', () => {
 
   function openCreateForm() {
     customerName.value = ''
+    customerEmail.value = ''
+    customerPhone.value = ''
+    customerDocument.value = ''
+    customerAddress.value = ''
     notes.value = ''
     formItems.value = []
     editingId.value = null
@@ -131,6 +208,7 @@ export const useOrdersStore = defineStore('orders', () => {
   }
 
   function selectProductForShelf(product: Product) {
+    if (product.stock <= 0) return
     selectedProductForShelf.value = product
     shelfLocations.value = []
     productSearchQuery.value = ''
@@ -166,6 +244,7 @@ export const useOrdersStore = defineStore('orders', () => {
         shelf_code: shelfCode,
         quantity,
         unit_price: unitPrice,
+        taxes: selectedProductForShelf.value.taxes ?? [],
       })
     }
 
@@ -177,15 +256,27 @@ export const useOrdersStore = defineStore('orders', () => {
     formItems.value.splice(index, 1)
   }
 
+  function updateFormItemQuantity(index: number, quantity: number) {
+    if (quantity <= 0) {
+      formItems.value.splice(index, 1)
+    } else {
+      formItems.value[index].quantity = quantity
+    }
+  }
+
   async function createOrder() {
-    if (!customerName.value.trim() || formItems.value.length === 0) return
+    if (formItems.value.length === 0) return
 
     saving.value = true
     error.value = null
 
     try {
-      await ordersService.create({
-        customer_name: customerName.value.trim(),
+      const created = await ordersService.create({
+        customer_name: customerName.value.trim() || 'Consumidor final',
+        customer_email: customerEmail.value.trim() || undefined,
+        customer_phone: customerPhone.value.trim() || undefined,
+        customer_document: customerDocument.value.trim() || undefined,
+        customer_address: customerAddress.value.trim() || undefined,
         notes: notes.value.trim() || undefined,
         items: formItems.value.map((item) => ({
           product_id: item.product_id,
@@ -196,6 +287,7 @@ export const useOrdersStore = defineStore('orders', () => {
       })
       closeForm()
       fetchOrders()
+      boardColumns.value.CREATED.items.unshift(created)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al crear pedido'
     } finally {
@@ -222,9 +314,11 @@ export const useOrdersStore = defineStore('orders', () => {
   async function prepareOrder(id: number) {
     saving.value = true
     error.value = null
+    const oldStatus = 'CREATED'
     try {
       const updated = await ordersService.prepare(id)
       updateOrderInList(updated)
+      moveBoardOrder(id, oldStatus, 'PREPARING', updated)
       closeDetail()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al preparar pedido'
@@ -236,9 +330,11 @@ export const useOrdersStore = defineStore('orders', () => {
   async function readyOrder(id: number) {
     saving.value = true
     error.value = null
+    const oldStatus = 'PREPARING'
     try {
       const updated = await ordersService.ready(id)
       updateOrderInList(updated)
+      moveBoardOrder(id, oldStatus, 'READY', updated)
       closeDetail()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al marcar pedido como listo'
@@ -250,14 +346,27 @@ export const useOrdersStore = defineStore('orders', () => {
   async function deliverOrder(id: number) {
     saving.value = true
     error.value = null
+    const oldStatus = 'READY'
     try {
       const updated = await ordersService.deliver(id)
       updateOrderInList(updated)
+      moveBoardOrder(id, oldStatus, 'DELIVERED', updated)
       closeDetail()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al entregar pedido'
     } finally {
       saving.value = false
+    }
+  }
+
+  function moveBoardOrder(id: number, fromStatus: string, toStatus: string, replacement: Order) {
+    const fromCol = boardColumns.value[fromStatus]
+    if (fromCol) {
+      fromCol.items = fromCol.items.filter((o) => o.id !== id)
+    }
+    const toCol = boardColumns.value[toStatus]
+    if (toCol) {
+      toCol.items.unshift(replacement)
     }
   }
 
@@ -294,7 +403,16 @@ export const useOrdersStore = defineStore('orders', () => {
     shelfLocations.value = []
     shelfLocationsLoading.value = false
     customerName.value = ''
+    customerEmail.value = ''
+    customerPhone.value = ''
+    customerDocument.value = ''
+    customerAddress.value = ''
     notes.value = ''
+    boardFilter.value = ''
+    boardDate.value = new Date().toISOString().slice(0, 10)
+    for (const s of BOARD_STATUSES) {
+      boardColumns.value[s] = { items: [], page: 1, hasMore: true, loading: false }
+    }
     if (searchTimer) {
       clearTimeout(searchTimer)
       searchTimer = null
@@ -323,9 +441,18 @@ export const useOrdersStore = defineStore('orders', () => {
     shelfLocations,
     shelfLocationsLoading,
     customerName,
+    customerEmail,
+    customerPhone,
+    customerDocument,
+    customerAddress,
     notes,
     orderTotal,
+    orderTaxTotal,
     canTransition,
+    boardColumns,
+    boardFilter,
+    boardDate,
+    setBoardDate,
     fetchOrders,
     setFilter,
     goToPage,
@@ -336,12 +463,16 @@ export const useOrdersStore = defineStore('orders', () => {
     selectProductForShelf,
     addItemToOrder,
     removeFormItem,
+    updateFormItemQuantity,
     createOrder,
     fetchOrderDetail,
     closeDetail,
     prepareOrder,
     readyOrder,
     deliverOrder,
+    setBoardFilter,
+    resetBoardColumns,
+    fetchBoardColumn,
     reset,
   }
 })

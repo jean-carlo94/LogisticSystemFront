@@ -164,6 +164,7 @@ export const useRolesStore = defineStore('roles', () => {
     try {
       await rolesService.setRolePermissions(selectedRoleId.value, { permission_ids: permissionIds })
       closePermissions()
+      fetchRoles()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al guardar permisos'
     } finally {

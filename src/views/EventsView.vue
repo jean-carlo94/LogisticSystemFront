@@ -66,20 +66,32 @@ onMounted(() => {
     </div>
 
     <div class="filter-bar">
-      <select v-model="fAction" aria-label="Filtrar por acción" class="filter-field" @change="doFilter">
-        <option value="">Acción</option>
+      <div class="filter-group">
+        <label class="filter-label">Acción</label>
+        <select v-model="fAction" aria-label="Filtrar por acción" class="filter-field" @change="doFilter">
+          <option value="">Todas</option>
         <option :value="AuditAction.CREATE">Creación</option>
         <option :value="AuditAction.UPDATE">Actualización</option>
         <option :value="AuditAction.DELETE">Eliminación</option>
-        <option :value="AuditAction.STATUS_CHANGED">Cambio de estado</option>
-      </select>
-      <select v-model="fEntityType" aria-label="Filtrar por tipo de entidad" class="filter-field" @change="doFilter">
-        <option value="">Tipo de entidad</option>
+          <option :value="AuditAction.STATUS_CHANGED">Cambio de estado</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Entidad</label>
+        <select v-model="fEntityType" aria-label="Filtrar por tipo de entidad" class="filter-field" @change="doFilter">
+          <option value="">Todas</option>
         <option :value="EntityType.Product">Producto</option>
-        <option :value="EntityType.User">Usuario</option>
-      </select>
-      <input v-model="fUserId" type="number" min="1" placeholder="ID Usuario" aria-label="Filtrar por ID de usuario" class="filter-field filter-num" @keyup.enter="doFilter" />
-      <input v-model="fEntityId" type="number" min="1" placeholder="ID Entidad" aria-label="Filtrar por ID de entidad" class="filter-field filter-num" @keyup.enter="doFilter" />
+          <option :value="EntityType.User">Usuario</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">ID Usuario</label>
+        <input v-model="fUserId" type="number" min="1" placeholder="..." aria-label="Filtrar por ID de usuario" class="filter-field filter-num" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">ID Entidad</label>
+        <input v-model="fEntityId" type="number" min="1" placeholder="..." aria-label="Filtrar por ID de entidad" class="filter-field filter-num" @keyup.enter="doFilter" />
+      </div>
       <button class="btn" @click="doFilter">Filtrar</button>
       <button v-if="hasFilters()" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>

@@ -14,11 +14,17 @@ export interface OrderItem {
   quantity: number
   unit_price: number
   subtotal: number
+  tax_amount: number
 }
 
 export interface Order {
   id: number
   customer_name: string
+  customer_email: string | null
+  customer_phone: string | null
+  customer_document: string | null
+  customer_address: string | null
+  customer_id: number | null
   total: number
   status: OrderStatus
   notes: string | null
@@ -37,6 +43,10 @@ export interface CreateOrderItem {
 
 export interface CreateOrderPayload {
   customer_name: string
+  customer_email?: string
+  customer_phone?: string
+  customer_document?: string
+  customer_address?: string
   notes?: string
   items: CreateOrderItem[]
 }
@@ -48,4 +58,5 @@ export interface OrderFormItem {
   shelf_code: string | null
   quantity: number
   unit_price: number
+  taxes: { id: number; name: string; rate: number }[]
 }

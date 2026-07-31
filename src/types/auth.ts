@@ -10,6 +10,7 @@ export interface UserBase {
   is_super_admin: boolean
   image_path: string | null
   image_url: string | null
+  tenant_id?: number | null
   created_at: string
   updated_at: string
 }

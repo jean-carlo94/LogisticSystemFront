@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useSalesStore } from '@/stores/sales'
 import { formatCurrency, formatDate } from '@/composables/useFormat'
 
 const store = useSalesStore()
+
+const totalTax = computed(() => {
+  if (!store.selectedSale?.items) return 0
+  return store.selectedSale.items.reduce((sum, item) => sum + (item.tax_amount ?? 0), 0)
+})
+
+const subtotal = computed(() => {
+  if (!store.selectedSale?.items) return 0
+  return store.selectedSale.items.reduce((sum, item) => sum + (item.subtotal ?? 0), 0)
+})
 </script>
 
 <template>
@@ -22,6 +33,22 @@ const store = useSalesStore()
             <span class="detail-label">Cliente</span>
             <span class="detail-value">{{ store.selectedSale.customer_name }}</span>
           </div>
+          <div v-if="store.selectedSale.customer_email" class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ store.selectedSale.customer_email }}</span>
+          </div>
+          <div v-if="store.selectedSale.customer_phone" class="detail-row">
+            <span class="detail-label">Teléfono</span>
+            <span class="detail-value">{{ store.selectedSale.customer_phone }}</span>
+          </div>
+          <div v-if="store.selectedSale.customer_document" class="detail-row">
+            <span class="detail-label">Documento</span>
+            <span class="detail-value">{{ store.selectedSale.customer_document }}</span>
+          </div>
+          <div v-if="store.selectedSale.customer_address" class="detail-row">
+            <span class="detail-label">Dirección</span>
+            <span class="detail-value">{{ store.selectedSale.customer_address }}</span>
+          </div>
           <div class="detail-row">
             <span class="detail-label">Estado</span>
             <span class="status-badge status-completed">{{ store.selectedSale.status }}</span>
@@ -34,9 +61,19 @@ const store = useSalesStore()
             <span class="detail-label">Notas</span>
             <span class="detail-value">{{ store.selectedSale.notes }}</span>
           </div>
-          <div class="detail-row total-row">
-            <span class="detail-label">Total</span>
-            <span class="detail-total">{{ formatCurrency(store.selectedSale.total) }}</span>
+          <div class="detail-summary">
+            <div class="detail-row">
+              <span class="detail-label">Subtotal</span>
+              <span class="detail-value">{{ formatCurrency(subtotal) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Impuesto</span>
+              <span class="detail-value">{{ formatCurrency(totalTax) }}</span>
+            </div>
+            <div class="detail-row total-row">
+              <span class="detail-label">Total</span>
+              <span class="detail-total">{{ formatCurrency(store.selectedSale.total) }}</span>
+            </div>
           </div>
         </div>
 
@@ -50,6 +87,7 @@ const store = useSalesStore()
                   <th scope="col">Ubicación</th>
                   <th scope="col">Cant.</th>
                   <th scope="col">P. Unit.</th>
+                  <th scope="col">Impuesto</th>
                   <th scope="col">Subtotal</th>
                 </tr>
               </thead>
@@ -59,6 +97,7 @@ const store = useSalesStore()
                   <td class="muted">{{ item.shelf_code ?? 'Sin estantería' }}</td>
                   <td>{{ item.quantity }}</td>
                   <td>{{ formatCurrency(item.unit_price) }}</td>
+                  <td class="muted">{{ formatCurrency(item.tax_amount) }}</td>
                   <td class="price-cell">{{ formatCurrency(item.subtotal) }}</td>
                 </tr>
               </tbody>
@@ -76,7 +115,7 @@ const store = useSalesStore()
 
 <style scoped>
 .sale-detail-modal {
-  width: 600px;
+  width: 700px;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -108,6 +147,16 @@ const store = useSalesStore()
 .total-row {
   border-top: 1px solid var(--border);
   padding-top: 10px;
+  margin-top: 4px;
+}
+
+.detail-summary {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-top: 4px;
 }
 

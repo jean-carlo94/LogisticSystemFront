@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-  import type { User, RegisterPayload } from '@/types/auth'
+import type { User, RegisterPayload } from '@/types/auth'
+import type { Tenant } from '@/types/tenant'
 import { authService } from '@/services/auth'
 import { useProductsStore } from '@/stores/products'
 import { useEventsStore } from '@/stores/events'
@@ -10,6 +11,8 @@ import { useShelvesStore } from '@/stores/shelves'
 import { useCategoriesStore } from '@/stores/categories'
 import { useSalesStore } from '@/stores/sales'
 import { useOrdersStore } from '@/stores/orders'
+import { useTenantsStore } from '@/stores/tenants'
+import { useTaxesStore } from '@/stores/taxes'
 import { useAutoClearError } from '@/composables/useAutoClearError'
 
 function resetAllStores() {
@@ -21,6 +24,17 @@ function resetAllStores() {
   useCategoriesStore().reset()
   useSalesStore().reset()
   useOrdersStore().reset()
+  useTenantsStore().reset()
+  useTaxesStore().reset()
+}
+
+function _restoreTenant(): Tenant | null {
+  try {
+    const raw = localStorage.getItem('current_tenant')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -28,6 +42,8 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('access_token'))
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const currentTenant = ref<Tenant | null>(_restoreTenant())
+  const tenantKey = ref(0)
 
   const { clearErrorTimer } = useAutoClearError(error)
 
@@ -42,6 +58,19 @@ export const useAuthStore = defineStore('auth', () => {
   function hasPermission(code: string): boolean {
     if (user.value?.is_super_admin) return true
     return permissions.value.includes(code)
+  }
+
+  function setTenant(tenant: Tenant | null) {
+    currentTenant.value = tenant
+    if (tenant) {
+      localStorage.setItem('current_tenant_slug', tenant.slug)
+      localStorage.setItem('current_tenant', JSON.stringify(tenant))
+    } else {
+      localStorage.removeItem('current_tenant_slug')
+      localStorage.removeItem('current_tenant')
+    }
+    resetAllStores()
+    tenantKey.value++
   }
 
   async function login(email: string, password: string) {
@@ -117,6 +146,8 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     user.value = null
     localStorage.removeItem('access_token')
+    localStorage.removeItem('current_tenant_slug')
+    localStorage.removeItem('current_tenant')
   }
 
   function init() {
@@ -133,6 +164,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     loading.value = false
     error.value = null
+    currentTenant.value = null
+    tenantKey.value = 0
   }
 
   return {
@@ -143,7 +176,10 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     permissions,
     displayName,
+    currentTenant,
+    tenantKey,
     hasPermission,
+    setTenant,
     login,
     register,
     fetchProfile,

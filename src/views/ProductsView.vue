@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useAuthStore } from '@/stores/auth'
 import { useShelvesStore } from '@/stores/shelves'
+import { categoriesService } from '@/services/categories'
+import type { Category } from '@/types/category'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsTable from '@/components/products/ProductsTable.vue'
 import { ProductState } from '@/types/product'
@@ -17,10 +19,12 @@ const fName = ref(store.filterParams.name ?? '')
 const fBarcode = ref(store.filterParams.barcode ?? '')
 const fState = ref(store.filterParams.state ?? '')
 const fStock = ref(store.filterParams.stock ?? '')
+const fCategory = ref(store.filterParams.category_id ?? '')
+const categories = ref<Category[]>([])
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-const unwatch = watch([fName, fBarcode, fState, fStock], () => {
+const unwatch = watch([fName, fBarcode, fState, fStock, fCategory], () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     if (hasFilters()) {
@@ -42,6 +46,7 @@ function doFilter() {
   if (fBarcode.value) p.barcode = fBarcode.value
   if (fState.value) p.state = fState.value
   if (fStock.value) p.stock = fStock.value
+  if (fCategory.value) p.category_id = fCategory.value
   store.setFilter(p)
 }
 
@@ -50,16 +55,21 @@ function clearFilter() {
   fBarcode.value = ''
   fState.value = ''
   fStock.value = ''
+  fCategory.value = ''
   store.setFilter({})
 }
 
-const hasFilters = () => fName.value || fBarcode.value || fState.value || fStock.value
+const hasFilters = () => fName.value || fBarcode.value || fState.value || fStock.value || fCategory.value
 
-onMounted(() => {
+onMounted(async () => {
   store.fetchProducts()
   if (shelvesStore.details.size === 0) {
     shelvesStore.fetchShelves()
   }
+  try {
+    const res = await categoriesService.getAll(1, 100)
+    categories.value = res.items
+  } catch { /* ignore */ }
   const editId = route.query.edit
   if (editId) {
     store.editById(Number(editId))
@@ -77,16 +87,35 @@ onMounted(() => {
     <ProductForm />
 
     <div class="filter-bar">
-      <input v-model="fName" type="text" placeholder="Nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fBarcode" type="text" placeholder="Código de barras" aria-label="Filtrar por código de barras" class="filter-field" @keyup.enter="doFilter" />
-      <select v-model="fState" aria-label="Filtrar por estado" class="filter-field" @change="doFilter">
-        <option value="">Estado</option>
+      <div class="filter-group">
+        <label class="filter-label">Nombre</label>
+        <input v-model="fName" type="text" placeholder="Buscar..." aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Código</label>
+        <input v-model="fBarcode" type="text" placeholder="Buscar..." aria-label="Filtrar por código de barras" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Estado</label>
+        <select v-model="fState" aria-label="Filtrar por estado" class="filter-field" @change="doFilter">
+          <option value="">Todos</option>
         <option :value="ProductState.ACTIVE">Activo</option>
         <option :value="ProductState.INACTIVE">Inactivo</option>
         <option :value="ProductState.NO_STOCK">Sin stock</option>
-        <option :value="ProductState.DISCONTINUED">Descontinuado</option>
+          <option :value="ProductState.DISCONTINUED">Descontinuado</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Stock</label>
+        <input v-model="fStock" type="number" min="0" placeholder="Exacto" aria-label="Filtrar por stock exacto" class="filter-field filter-num" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Categoría</label>
+        <select v-model="fCategory" aria-label="Filtrar por categoría" class="filter-field" @change="doFilter">
+          <option value="">Todas</option>
+        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
       </select>
-      <input v-model="fStock" type="number" min="0" placeholder="Stock exacto" aria-label="Filtrar por stock exacto" class="filter-field filter-num" @keyup.enter="doFilter" />
+      </div>
       <button class="btn" @click="doFilter">Filtrar</button>
       <button v-if="hasFilters()" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>

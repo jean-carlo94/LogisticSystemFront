@@ -2,9 +2,11 @@
 import { ref, onUnmounted } from 'vue'
 import type { Product } from '@/types/product'
 import { useSalesStore } from '@/stores/sales'
+import { useShelvesStore } from '@/stores/shelves'
 import ProductCard from './ProductCard.vue'
 
 const store = useSalesStore()
+const shelvesStore = useShelvesStore()
 const query = ref('')
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -30,7 +32,19 @@ function onEnter() {
 }
 
 function selectProduct(product: Product) {
-  store.openShelfPicker(product)
+  if (shelvesStore.total === 0) {
+    store.addToCartDirect(product)
+  } else {
+    store.openShelfPicker(product)
+  }
+}
+
+function onRefresh() {
+  if (query.value.trim()) {
+    store.searchProducts(query.value)
+  } else {
+    store.fetchInitialProducts()
+  }
 }
 
 onUnmounted(() => {
@@ -80,6 +94,7 @@ onUnmounted(() => {
         :product="product"
         @select="selectProduct"
         @quick-add="store.addToCartDirect"
+        @refresh="onRefresh"
       />
     </div>
 

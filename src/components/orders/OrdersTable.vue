@@ -20,6 +20,13 @@ const statusClasses: Record<string, string> = {
   READY: 'status-ready',
   DELIVERED: 'status-delivered',
 }
+
+const rowClasses: Record<string, string> = {
+  CREATED: 'row-created',
+  PREPARING: 'row-preparing',
+  READY: 'row-ready',
+  DELIVERED: 'row-delivered',
+}
 </script>
 
 <template>
@@ -38,7 +45,7 @@ const statusClasses: Record<string, string> = {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order in store.orders" :key="order.id">
+          <tr v-for="order in store.orders" :key="order.id" :class="rowClasses[order.status]">
             <td class="id-cell">{{ order.id }}</td>
             <td class="name-cell">{{ order.customer_name }}</td>
             <td class="price-cell">{{ formatCurrency(order.total) }}</td>
@@ -91,6 +98,11 @@ const statusClasses: Record<string, string> = {
 
 .status-created { background: var(--bg-hover); color: var(--text-muted); }
 .status-preparing { background: var(--accent-light); color: var(--accent); }
-.status-ready { background: var(--success-light); color: var(--success); }
+.status-ready { background: var(--warning-light); color: var(--warning); }
 .status-delivered { background: var(--success-light); color: var(--success); }
+
+.row-created  { border-left: 3px solid var(--text-muted); }
+.row-preparing { border-left: 3px solid var(--accent); }
+.row-ready     { border-left: 3px solid var(--warning); }
+.row-delivered { border-left: 3px solid var(--success); }
 </style>

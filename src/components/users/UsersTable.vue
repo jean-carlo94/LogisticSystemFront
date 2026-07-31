@@ -25,6 +25,7 @@ function fullName(user: { first_name: string | null; last_name: string | null })
             <th scope="col">Ciudad</th>
             <th scope="col">Estado</th>
             <th scope="col">Tipo</th>
+            <th scope="col" v-if="auth.user?.is_super_admin">Tenant</th>
             <th scope="col">Creado</th>
             <th scope="col" v-if="auth.hasPermission('users_manage')"></th>
           </tr>
@@ -62,6 +63,7 @@ function fullName(user: { first_name: string | null; last_name: string | null })
               <span v-if="user.is_super_admin" class="badge-super">Super Admin</span>
               <span v-else class="badge-normal">Usuario</span>
             </td>
+            <td v-if="auth.user?.is_super_admin" class="id-cell">{{ user.tenant_id ?? '—' }}</td>
             <td class="date-cell">{{ formatDate(user.created_at, 'short') }}</td>
             <td v-if="auth.hasPermission('users_manage')">
               <div class="actions-cell">

@@ -32,6 +32,8 @@ function openShelf(shelfId: number) {
             <th scope="col">Precio</th>
             <th scope="col">Stock</th>
             <th scope="col">Código</th>
+            <th scope="col">Categorías</th>
+            <th scope="col">Impuestos</th>
             <th scope="col">Estanterías</th>
             <th scope="col">Estado</th>
             <th scope="col" v-if="auth.hasPermission('products_update') || auth.hasPermission('products_delete')"></th>
@@ -52,13 +54,22 @@ function openShelf(shelfId: number) {
             <td>
               <span class="product-name">{{ product.name }}</span>
               <span v-if="product.description" class="product-desc">{{ product.description }}</span>
-              <div v-if="product.categories.length > 0" class="product-categories">
-                <span v-for="cat in product.categories" :key="cat.id" class="category-tag">{{ cat.name }}</span>
-              </div>
             </td>
             <td class="price-cell">{{ formatCurrency(product.price) }}</td>
             <td>{{ product.stock }}</td>
             <td class="muted">{{ product.barcode || '—' }}</td>
+            <td>
+              <div v-if="product.categories.length > 0" class="tag-group">
+                <span v-for="cat in product.categories" :key="cat.id" class="category-tag">{{ cat.name }}</span>
+              </div>
+              <span v-else class="muted">—</span>
+            </td>
+            <td>
+              <div v-if="product.taxes && product.taxes.length > 0" class="tag-group">
+                <span v-for="tax in product.taxes" :key="tax.id" class="tax-tag">{{ tax.name }} {{ tax.rate }}%</span>
+              </div>
+              <span v-else class="muted">—</span>
+            </td>
             <td>
               <div class="shelf-badges">
                 <template v-if="shelvesStore.details.size > 0">
@@ -98,11 +109,10 @@ function openShelf(shelfId: number) {
   margin-top: 2px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-.product-categories {
+.tag-group {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  margin-top: 4px;
 }
 
 .category-tag {
@@ -111,6 +121,15 @@ function openShelf(shelfId: number) {
   border-radius: 99px;
   background: var(--accent-light);
   color: var(--accent);
+  font-weight: 500;
+}
+
+.tax-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--success-light);
+  color: var(--success);
   font-weight: 500;
 }
 

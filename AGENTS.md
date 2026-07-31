@@ -25,11 +25,12 @@ No meta-framework, no CSS framework, no Tailwind.
 - **`.env`** sets `VITE_API_BASE_URL=http://localhost:8000/api/v1`. The README example omits `/v1`, but the active `.env` includes it.
 - Recommended VSCode extension: **Volar** (`.vscode/extensions.json`).
 - **Auth state recovery**: `src/main.ts` calls `useAuthStore().init()` checking localStorage for token and restoring profile via `GET /auth/me`. Do NOT remove or bypass this call.
-- **Store reset**: When login/logout occurs, `authStore` calls `resetAllStores()` which invokes `reset()` on all other stores (products, events, roles, users). Every new store MUST expose a `reset()` method that clears all state to initial values.
-- **CSS conventions**: Shared UI classes live in `src/style.css` (not duplicated in scoped blocks). Global classes include: `.page`, `.table-wrap`, `.overlay`, `.modal`, `.form`, `.field`, `.row`, `.actions`, `.btn-ghost`, `.empty-state`, `.error-banner`, `.id-cell`, `.date-cell`, `.actions-cell`, `.skeleton`, `.skeleton-table`, `.skeleton-row`. Component `<style scoped>` blocks should ONLY contain classes unique to that component.
+- **Store reset**: When login/logout occurs, `authStore` calls `resetAllStores()` which invokes `reset()` on all other stores (products, events, roles, users, shelves, categories, sales, orders, taxes, tenants). Every new store MUST expose a `reset()` method that clears all state to initial values.
+- **CSS conventions**: Shared UI classes live in `src/style.css` (not duplicated in scoped blocks). Global classes include: `.page`, `.table-wrap`, `.overlay`, `.modal`, `.form`, `.field`, `.row`, `.actions`, `.btn-ghost`, `.empty-state`, `.error-banner`, `.id-cell`, `.date-cell`, `.actions-cell`, `.skeleton`, `.skeleton-table`, `.skeleton-row`, `.filter-group`, `.filter-label`. Component `<style scoped>` blocks should ONLY contain classes unique to that component.
 - **Logic reuse**: Common formatters live in `src/composables/useFormat.ts` (`formatDate`). User display name is a store computed (`authStore.displayName`). Do not duplicate these in components.
 - **Accessibility conventions**:
   - Every filter input/select MUST have `aria-label` describing its purpose (e.g. `aria-label="Filtrar por nombre"`)
+  - Every filter bar MUST wrap each input in `<div class="filter-group"><label class="filter-label">LABEL</label> ... </div>` for visual consistency
   - Every modal MUST have `role="dialog" aria-modal="true" aria-labelledby="..."` on `.modal`, a matching `:id` on the `<h2>`, and `@keydown.escape` to close
   - Every data table MUST have `scope="col"` on all `<th>` elements and `aria-label` on `<table>`
   - Every non-interactive clickable element (`<div @click>`) MUST have `role="button" tabindex="0"` plus `@keydown.enter` and `@keydown.space.prevent` handlers
@@ -43,22 +44,24 @@ No meta-framework, no CSS framework, no Tailwind.
 src/
   components/
     layout/          AppSidebar.vue, ProfileModal.vue
-    products/        ProductBadge.vue, ProductForm.vue (modal, on-demand category search), ProductsTable.vue (table + pagination)
+    products/        ProductBadge.vue, ProductForm.vue (modal, on-demand category + tax search, price-with-tax preview), ProductsTable.vue (table + pagination, category & tax columns)
     shelves/         ShelfCard.vue, ShelvesGrid.vue (grid + pagination), ShelfFormModal.vue, ShelfDetailModal.vue, ProductPalette.vue
-    sales/           ProductCard.vue, ProductSearch.vue (debounced search), SalesCart.vue, SalesTable.vue (table + pagination), ShelfPickerModal.vue (with "Sin estantería" option), SaleDetailModal.vue
+    sales/           ProductCard.vue (stock gate + inline restock), ProductSearch.vue (debounced search), SalesCart.vue (customer accordion + tax tags), SalesTable.vue (table + pagination), ShelfPickerModal.vue (with "Sin estantería" option), SaleDetailModal.vue (customer fields + tax summary)
     events/          EventBadge.vue, EventsTable.vue (table + pagination)
     roles/           RoleFormModal.vue, PermissionsModal.vue, RolesTable.vue (table + pagination)
     users/           UserFormModal.vue, RoleAssignModal.vue, UsersTable.vue (table + pagination)
+    taxes/           TaxFormModal.vue, TaxesTable.vue (table + pagination)
+    orders/          OrderFormModal.vue (customer accordion + editable qty + tax tags), OrderDetailModal.vue (customer fields), OrdersTable.vue, OrdersBoard.vue (kanban + drag-drop)
     ui/              Pagination.vue (page size selector + page buttons)
   composables/       useTheme.ts (dark/light toggle, OS auto-detect), useSidebar.ts (collapse state)
   router/index.ts    createWebHistory, beforeEach guard for auth
   services/          Axios instance (api.ts) + per-resource methods
   stores/            Pinia setup-function stores
   types/             TS interfaces + enums per domain
-  views/             Page-level components (minimal wiring: header, state, table, modals)
+   views/             Page-level components (minimal wiring: header, state, table, modals)
                      AuthView, VerifyEmailView, ForgotPasswordView, ResetPasswordView
                      ProductsView, ShelvesView, EventsView, RolesView, UsersView
-                     CategoriesView, SalesView
+                     CategoriesView, SalesView, OrdersView, TaxesView, TenantsView
 ```
 
 ### View pattern
@@ -129,7 +132,7 @@ Every store exports:
 
 ### Permission gating
 
-Use `auth.hasPermission('code')` to conditionally show buttons and table columns. Permission codes: `products_create`, `products_read`, `products_update`, `products_delete`, `events_read`, `roles_manage`, `users_manage`. Super admins bypass all checks.
+Use `auth.hasPermission('code')` to conditionally show buttons and table columns. Permission codes: `products_create`, `products_read`, `products_update`, `products_delete`, `categories_*`, `shelves_*`, `sales_*`, `orders_*`, `events_read`, `roles_manage`, `users_manage`, `tenants_manage`, `taxes_read`, `taxes_manage`, `customers_read`, `customers_manage`. Super admins bypass all checks.
 
 ```ts
 const auth = useAuthStore()
@@ -198,11 +201,11 @@ Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
 ### Products (protected)
 
 - `GET /products/` — paginated list
-- `POST /products/` — create, required: `name`, `price`; optional: `description`, `stock`, `state`, `category_ids`, `barcode`, `weight_kg`, `width_cm`, `height_cm`, `depth_cm`
+- `POST /products/` — create, required: `name`, `price`; optional: `description`, `stock`, `state`, `category_ids`, `tax_ids`, `barcode`, `weight_kg`, `width_cm`, `height_cm`, `depth_cm`
 - `PUT /products/{id}` — partial update
 - `DELETE /products/{id}`
 
-**Validation:** `name` min 1 max 200 (strip), `price` gt 0 (round 2), `stock` ge 0 (clamp), `state` enum `ACTIVE|INACTIVE|NO_STOCK|DISCONTINUED`. Setting `stock=0` forces `state → NO_STOCK`.
+**Validation:** `name` min 1 max 200 (strip), `price` gt 0 (round 2), `stock` ge 0 (clamp), `state` enum `ACTIVE|INACTIVE|NO_STOCK|DISCONTINUED`. Setting `stock=0` forces `state → NO_STOCK`. Response includes `taxes: [{id, name, rate}]`.
 
 ### Categories
 
@@ -210,6 +213,27 @@ Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
 - `POST /categories/` — create `{ name, description? }`
 - `PUT /categories/{id}` — update
 - `DELETE /categories/{id}`
+
+### Taxes
+
+- `GET /taxes/` — paginated list, supports `?name=` filter [taxes_read]
+- `POST /taxes/` — create `{ name, rate, description? }` [taxes_manage]
+- `PUT /taxes/{id}` — update `{ name?, rate?, description?, is_active? }` [taxes_manage]
+- `DELETE /taxes/{id}` [taxes_manage]
+
+### Customers
+
+- `GET /customers/` — paginated list, supports `?name=`, `?email=`, `?document=` filters [customers_read]
+- Used by SalesCart and OrderFormModal for existing customer search (debounced autocomplete, populates all fields on select)
+
+### Orders
+
+- `GET /orders/` — paginated list [orders_read]
+- `GET /orders/{id}` — single order with items [orders_read]
+- `POST /orders/` — create `{ customer_name, customer_email?, customer_phone?, customer_document?, customer_address?, notes?, items: [{ product_id, shelf_id?, quantity, unit_price }] }` [orders_create]
+- `POST /orders/{id}/prepare` — CREATED → PREPARING [orders_manage]
+- `POST /orders/{id}/ready` — PREPARING → READY [orders_manage]
+- `POST /orders/{id}/deliver` — READY → DELIVERED, creates a sale automatically [orders_manage]
 
 ### Events (read-only)
 
@@ -221,7 +245,7 @@ Base URL: `VITE_API_BASE_URL` (`.env` = `http://localhost:8000/api/v1`).
 
 - `GET /sales/` — paginated list
 - `GET /sales/{id}` — single sale with items
-- `POST /sales/` — create `{ customer_name, notes?, items: [{ product_id, shelf_id?, quantity, unit_price }] }`. If `shelf_id` is omitted/null, only product stock is reduced. If present, both shelf quantity and product stock are reduced.
+- `POST /sales/` — create `{ customer_name, customer_email?, customer_phone?, customer_document?, customer_address?, notes?, items: [{ product_id, shelf_id?, quantity, unit_price }] }`. Customer fields are optional; if omitted, `customer_name` defaults to `"Consumidor final"`. If `shelf_id` is omitted/null, only product stock is reduced. If present, both shelf quantity and product stock are reduced. Response items include `tax_amount`.
 
 ### Roles
 

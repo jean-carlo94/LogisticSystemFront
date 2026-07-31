@@ -35,6 +35,22 @@ const statusLabels: Record<string, string> = {
             <span class="detail-label">Cliente</span>
             <span class="detail-value">{{ store.selectedOrder.customer_name }}</span>
           </div>
+          <div v-if="store.selectedOrder.customer_email" class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ store.selectedOrder.customer_email }}</span>
+          </div>
+          <div v-if="store.selectedOrder.customer_phone" class="detail-row">
+            <span class="detail-label">Teléfono</span>
+            <span class="detail-value">{{ store.selectedOrder.customer_phone }}</span>
+          </div>
+          <div v-if="store.selectedOrder.customer_document" class="detail-row">
+            <span class="detail-label">Documento</span>
+            <span class="detail-value">{{ store.selectedOrder.customer_document }}</span>
+          </div>
+          <div v-if="store.selectedOrder.customer_address" class="detail-row">
+            <span class="detail-label">Dirección</span>
+            <span class="detail-value">{{ store.selectedOrder.customer_address }}</span>
+          </div>
           <div class="detail-row">
             <span class="detail-label">Estado</span>
             <span class="detail-value">{{ statusLabels[store.selectedOrder.status] || store.selectedOrder.status }}</span>

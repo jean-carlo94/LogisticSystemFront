@@ -8,6 +8,7 @@ export interface Role {
   id: number
   name: string
   description: string | null
+  tenant_id?: number | null
   created_at: string
 }
 

@@ -20,6 +20,7 @@ export interface Product {
   image_path: string | null
   image_url: string | null
   categories: { id: number; name: string }[]
+  taxes: { id: number; name: string; rate: number }[]
   create_at: string
   update_at: string
 }
@@ -36,6 +37,7 @@ export interface ProductForm {
   height_cm: number
   depth_cm: number
   category_ids: number[]
+  tax_ids: number[]
 }
 
 export function createEmptyProduct(): ProductForm {
@@ -51,5 +53,6 @@ export function createEmptyProduct(): ProductForm {
     height_cm: 0,
     depth_cm: 0,
     category_ids: [],
+    tax_ids: [],
   }
 }

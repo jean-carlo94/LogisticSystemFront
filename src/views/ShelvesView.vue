@@ -91,12 +91,29 @@ onMounted(async () => {
     </div>
 
     <div class="filter-bar">
-      <input v-model="fCode" type="text" placeholder="Código" aria-label="Filtrar por código" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fName" type="text" placeholder="Nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fAisle" type="text" placeholder="Pasillo" aria-label="Filtrar por pasillo" class="filter-field filter-sm" @keyup.enter="doFilter" />
-      <input v-model="fRow" type="number" min="0" placeholder="Fila" aria-label="Filtrar por fila" class="filter-field filter-num" @keyup.enter="doFilter" />
-      <input v-model="fLevel" type="number" min="0" placeholder="Nivel" aria-label="Filtrar por nivel" class="filter-field filter-num" @keyup.enter="doFilter" />
-      <input
+      <div class="filter-group">
+        <label class="filter-label">Codigo</label>
+        <input v-model="fCode" type="text" placeholder="Buscar..." aria-label="Filtrar por código" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Nombre</label>
+        <input v-model="fName" type="text" placeholder="Buscar..." aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Pasillo</label>
+        <input v-model="fAisle" type="text" placeholder="Buscar..." aria-label="Filtrar por pasillo" class="filter-field filter-sm" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Fila</label>
+        <input v-model="fRow" type="number" min="0" placeholder="..." aria-label="Filtrar por fila" class="filter-field filter-num" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Nivel</label>
+        <input v-model="fLevel" type="number" min="0" placeholder="..." aria-label="Filtrar por nivel" class="filter-field filter-num" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Producto</label>
+        <input
         v-model="fProduct"
         type="text"
         placeholder="Buscar producto..."
@@ -105,6 +122,7 @@ onMounted(async () => {
         @keyup.enter="store.setProductFilter(fProduct)"
         @input="store.setProductFilter(fProduct)"
       />
+      </div>
       <button class="btn" @click="doFilter">Filtrar</button>
       <button v-if="hasFilters() || fProduct" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>

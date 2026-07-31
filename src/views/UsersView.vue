@@ -67,24 +67,46 @@ onMounted(() => {
   <div class="page">
     <div class="page-header">
       <h1>Usuarios</h1>
+      <button class="btn btn-primary" @click="store.openCreateForm()">Nuevo usuario</button>
     </div>
 
     <div class="filter-bar">
-      <input v-model="fEmail" type="text" placeholder="Email" aria-label="Filtrar por email" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fFirst" type="text" placeholder="Nombre" aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fLast" type="text" placeholder="Apellido" aria-label="Filtrar por apellido" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fCity" type="text" placeholder="Ciudad" aria-label="Filtrar por ciudad" class="filter-field" @keyup.enter="doFilter" />
-      <input v-model="fCountry" type="text" placeholder="País" aria-label="Filtrar por país" class="filter-field" @keyup.enter="doFilter" />
-      <select v-model="fActive" aria-label="Filtrar por estado activo" class="filter-field" @change="doFilter">
-        <option value="">Activo?</option>
-        <option value="true">Activo</option>
-        <option value="false">Inactivo</option>
-      </select>
-      <select v-model="fSuper" aria-label="Filtrar por tipo de usuario" class="filter-field" @change="doFilter">
-        <option value="">Tipo</option>
+      <div class="filter-group">
+        <label class="filter-label">Email</label>
+        <input v-model="fEmail" type="text" placeholder="Buscar..." aria-label="Filtrar por email" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Nombre</label>
+        <input v-model="fFirst" type="text" placeholder="Buscar..." aria-label="Filtrar por nombre" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Apellido</label>
+        <input v-model="fLast" type="text" placeholder="Buscar..." aria-label="Filtrar por apellido" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Ciudad</label>
+        <input v-model="fCity" type="text" placeholder="Buscar..." aria-label="Filtrar por ciudad" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">País</label>
+        <input v-model="fCountry" type="text" placeholder="Buscar..." aria-label="Filtrar por país" class="filter-field" @keyup.enter="doFilter" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Activo</label>
+        <select v-model="fActive" aria-label="Filtrar por estado activo" class="filter-field" @change="doFilter">
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Tipo</label>
+        <select v-model="fSuper" aria-label="Filtrar por tipo de usuario" class="filter-field" @change="doFilter">
+          <option value="">Todos</option>
         <option value="true">Super Admin</option>
-        <option value="false">Usuario normal</option>
-      </select>
+          <option value="false">Usuario normal</option>
+        </select>
+      </div>
       <button class="btn" @click="doFilter">Filtrar</button>
       <button v-if="hasFilters()" class="btn btn-ghost" @click="clearFilter">Limpiar</button>
     </div>

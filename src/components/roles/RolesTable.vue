@@ -16,6 +16,7 @@ const auth = useAuthStore()
             <th scope="col">#</th>
             <th scope="col">Nombre</th>
             <th scope="col">Descripción</th>
+            <th scope="col" v-if="auth.user?.is_super_admin">Tenant</th>
             <th scope="col" v-if="auth.hasPermission('roles_manage')"></th>
           </tr>
         </thead>
@@ -24,6 +25,7 @@ const auth = useAuthStore()
             <td class="id-cell">{{ role.id }}</td>
             <td class="name-cell">{{ role.name }}</td>
             <td class="desc-cell">{{ role.description || '—' }}</td>
+            <td v-if="auth.user?.is_super_admin" class="id-cell">{{ role.tenant_id ?? '—' }}</td>
             <td v-if="auth.hasPermission('roles_manage')">
               <div class="actions-cell">
                 <button class="btn btn-ghost" @click="store.openPermissions(role.id)">Permisos</button>

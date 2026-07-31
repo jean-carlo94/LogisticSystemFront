@@ -1,8 +1,54 @@
 <script setup lang="ts">
+import { ref, onUnmounted } from 'vue'
 import { useSalesStore } from '@/stores/sales'
+import { customersService } from '@/services/customers'
+import type { Customer } from '@/types/customer'
 import { formatCurrency } from '@/composables/useFormat'
 
 const store = useSalesStore()
+
+const customerSearch = ref('')
+const customerResults = ref<Customer[]>([])
+const searchLoading = ref(false)
+const showDropdown = ref(false)
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+function onCustomerInput() {
+  if (searchTimer) clearTimeout(searchTimer)
+  showDropdown.value = true
+  const q = customerSearch.value.trim()
+  if (!q) {
+    customerResults.value = []
+    return
+  }
+  searchTimer = setTimeout(async () => {
+    searchLoading.value = true
+    try {
+      const res = await customersService.getAll(1, 8, { name: q })
+      customerResults.value = res.items
+    } catch {
+      customerResults.value = []
+    } finally {
+      searchLoading.value = false
+    }
+  }, 300)
+}
+
+function selectCustomer(c: Customer) {
+  store.customerName = c.name
+  store.customerEmail = c.email ?? ''
+  store.customerPhone = c.phone ?? ''
+  store.customerDocument = c.document ?? ''
+  store.customerAddress = c.address ?? ''
+  customerSearch.value = ''
+  customerResults.value = []
+  showDropdown.value = false
+}
+
+onUnmounted(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+})
 </script>
 
 <template>
@@ -13,15 +59,67 @@ const store = useSalesStore()
       <span>{{ store.error }}</span>
     </div>
 
-    <label class="field cart-field">
-      <span>Cliente</span>
-      <input v-model="store.customerName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente" />
-    </label>
+    <details class="cart-customer">
+      <summary class="cart-customer-summary">Datos del cliente <span class="summary-hint">(opcional)</span></summary>
+      <div class="cart-customer-fields">
+        <div class="customer-search-wrap">
+          <input
+            v-model="customerSearch"
+            type="text"
+            class="customer-search-input"
+            placeholder="Buscar cliente existente..."
+            aria-label="Buscar cliente"
+            @input="onCustomerInput"
+            @focus="showDropdown = customerResults.length > 0 || !!customerSearch.trim()"
+            @blur="showDropdown = false"
+          />
+          <div v-if="searchLoading" class="search-hint-small">Buscando...</div>
+          <div v-if="showDropdown && customerResults.length > 0" class="customer-dropdown">
+            <button
+              v-for="c in customerResults"
+              :key="c.id"
+              type="button"
+              class="customer-dropdown-item"
+              @mousedown.prevent="selectCustomer(c)"
+            >
+              <span class="customer-dd-name">{{ c.name }}</span>
+              <span v-if="c.document" class="customer-dd-doc">{{ c.document }}</span>
+              <span v-if="c.email" class="customer-dd-email">{{ c.email }}</span>
+            </button>
+          </div>
+        </div>
 
-    <label class="field cart-field">
-      <span>Notas</span>
-      <input v-model="store.notes" type="text" placeholder="Opcional" aria-label="Notas de la venta" />
-    </label>
+        <label class="field cart-field">
+          <span>Cliente</span>
+          <input v-model="store.customerName" type="text" placeholder="Opcional" aria-label="Nombre del cliente" />
+        </label>
+
+        <label class="field cart-field">
+          <span>Email</span>
+          <input v-model="store.customerEmail" type="email" placeholder="Opcional" aria-label="Email del cliente" />
+        </label>
+
+        <label class="field cart-field">
+          <span>Teléfono</span>
+          <input v-model="store.customerPhone" type="text" placeholder="Opcional" aria-label="Teléfono del cliente" />
+        </label>
+
+        <label class="field cart-field">
+          <span>Documento</span>
+          <input v-model="store.customerDocument" type="text" placeholder="RUT/DNI/CUIT — Opcional" aria-label="Documento del cliente" />
+        </label>
+
+        <label class="field cart-field">
+          <span>Dirección</span>
+          <input v-model="store.customerAddress" type="text" placeholder="Opcional" aria-label="Dirección del cliente" />
+        </label>
+
+        <label class="field cart-field">
+          <span>Notas</span>
+          <input v-model="store.notes" type="text" placeholder="Opcional" aria-label="Notas de la venta" />
+        </label>
+      </div>
+    </details>
 
     <div v-if="store.cart.length === 0" class="cart-empty">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2">
@@ -42,6 +140,9 @@ const store = useSalesStore()
           </button>
         </div>
         <span class="cart-item-shelf" :class="{ 'no-shelf': item.shelf_id === null }">{{ item.shelf_code ?? 'Sin estantería' }}</span>
+        <div v-if="item.taxes && item.taxes.length > 0" class="cart-item-taxes">
+          <span v-for="tax in item.taxes" :key="tax.id" class="tax-tag">{{ tax.name }} {{ tax.rate }}%</span>
+        </div>
         <div class="cart-item-controls">
           <div class="qty-control">
             <button class="qty-btn" @click="store.updateCartQuantity(index, item.quantity - 1)">−</button>
@@ -63,12 +164,25 @@ const store = useSalesStore()
     </div>
 
     <div v-if="store.cart.length > 0" class="cart-footer">
-      <div class="cart-total">
-        <span>Total</span>
-        <span class="cart-total-amount">{{ formatCurrency(store.cartTotal) }}</span>
+      <div class="cart-totals">
+        <div class="cart-subtotal">
+          <span>Subtotal</span>
+          <span>{{ formatCurrency(store.cartTotal) }}</span>
+        </div>
+        <div v-if="store.cartTaxTotal > 0" class="cart-tax">
+          <span>Impuesto</span>
+          <span>{{ formatCurrency(store.cartTaxTotal) }}</span>
+        </div>
+        <div class="cart-total">
+          <span>Total</span>
+          <span class="cart-total-amount">{{ formatCurrency(store.cartTotal + store.cartTaxTotal) }}</span>
+        </div>
       </div>
       <div class="cart-actions">
-        <button class="btn btn-primary cart-submit" :disabled="store.saving || !store.customerName.trim()" @click="store.submitSale()">
+
+
+
+        <button class="btn btn-primary cart-submit" :disabled="store.saving" @click="store.submitSale()">
           {{ store.saving ? 'Registrando...' : 'Registrar Venta' }}
         </button>
         <button class="btn btn-ghost" @click="store.clearCart()">Limpiar</button>
@@ -170,6 +284,22 @@ const store = useSalesStore()
   font-style: italic;
 }
 
+.cart-item-taxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.tax-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: var(--success-light);
+  color: var(--success);
+  font-weight: 500;
+}
+
 .cart-item-controls {
   display: flex;
   align-items: center;
@@ -233,11 +363,35 @@ const store = useSalesStore()
   margin-top: 12px;
 }
 
+.cart-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.cart-subtotal,
+.cart-tax {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cart-subtotal span:last-child,
+.cart-tax span:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
 .cart-total {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
 }
 
 .cart-total span:first-child {
@@ -269,5 +423,101 @@ const store = useSalesStore()
 
 .cart-field {
   margin-bottom: 10px;
+}
+
+.cart-customer {
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cart-customer-summary {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-hover);
+}
+
+.cart-customer-summary:hover {
+  color: var(--text-primary);
+}
+
+.summary-hint {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.cart-customer-fields {
+  padding: 12px 12px 2px;
+}
+
+.customer-search-wrap {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.customer-search-input {
+  font-size: 13px !important;
+  padding: 7px 10px !important;
+}
+
+.search-hint-small {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.customer-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  margin-top: 2px;
+}
+
+.customer-dropdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.customer-dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.customer-dd-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.customer-dd-doc {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.customer-dd-email {
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 </style>

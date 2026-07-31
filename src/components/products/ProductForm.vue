@@ -4,7 +4,9 @@ import { useProductsStore } from '@/stores/products'
 import { ProductState } from '@/types/product'
 import type { Category } from '@/types/category'
 import { categoriesService } from '@/services/categories'
-import { getMediaUrl } from '@/composables/useFormat'
+import { taxesService } from '@/services/taxes'
+import type { Tax } from '@/types/tax'
+import { getMediaUrl, formatCurrency } from '@/composables/useFormat'
 
 const store = useProductsStore()
 
@@ -36,18 +38,34 @@ const searchLoading = ref(false)
 const showCategoryDropdown = ref(false)
 const selectedCategories = ref<{ id: number; name: string }[]>([])
 
+const taxSearch = ref('')
+const taxResults = ref<Tax[]>([])
+const taxLoading = ref(false)
+const showTaxDropdown = ref(false)
+const selectedTaxes = ref<{ id: number; name: string; rate: number }[]>([])
+
 let searchTimer: ReturnType<typeof setTimeout> | null = null
+let taxTimer: ReturnType<typeof setTimeout> | null = null
+
+const priceWithTax = computed(() => {
+  const rate = selectedTaxes.value.reduce((sum, t) => sum + t.rate, 0)
+  return store.form.price * (1 + rate / 100)
+})
 
 const unwatch = watch(() => store.isFormOpen, (open) => {
   if (open) {
     categorySearch.value = ''
     searchResults.value = []
+    taxSearch.value = ''
+    taxResults.value = []
     imageError.value = null
     if (store.isEditing) {
       const product = store.products.find((p) => p.id === store.editingId)
       selectedCategories.value = product?.categories ?? []
+      selectedTaxes.value = product?.taxes ?? []
     } else {
       selectedCategories.value = []
+      selectedTaxes.value = []
     }
   }
 })
@@ -86,6 +104,42 @@ function removeCategory(id: number) {
   if (idx !== -1) store.form.category_ids.splice(idx, 1)
   const selIdx = selectedCategories.value.findIndex((c) => c.id === id)
   if (selIdx !== -1) selectedCategories.value.splice(selIdx, 1)
+}
+
+function onTaxSearch() {
+  if (taxTimer) clearTimeout(taxTimer)
+  const q = taxSearch.value.trim()
+  if (!q) {
+    taxResults.value = []
+    return
+  }
+  taxTimer = setTimeout(async () => {
+    taxLoading.value = true
+    try {
+      const res = await taxesService.getAll(1, 10, { name: q })
+      taxResults.value = res.items.filter(
+        (t) => !store.form.tax_ids.includes(t.id)
+      )
+    } catch {
+      taxResults.value = []
+    } finally {
+      taxLoading.value = false
+    }
+  }, 300)
+}
+
+function addTax(tax: Tax) {
+  store.form.tax_ids.push(tax.id)
+  selectedTaxes.value.push({ id: tax.id, name: tax.name, rate: tax.rate })
+  taxSearch.value = ''
+  taxResults.value = []
+}
+
+function removeTax(id: number) {
+  const idx = store.form.tax_ids.indexOf(id)
+  if (idx !== -1) store.form.tax_ids.splice(idx, 1)
+  const selIdx = selectedTaxes.value.findIndex((t) => t.id === id)
+  if (selIdx !== -1) selectedTaxes.value.splice(selIdx, 1)
 }
 
 function handleFile(file: File) {
@@ -129,6 +183,7 @@ async function submitForm() {
 
 onUnmounted(() => {
   if (searchTimer) clearTimeout(searchTimer)
+  if (taxTimer) clearTimeout(taxTimer)
   unwatch()
 })
 </script>
@@ -170,6 +225,57 @@ onUnmounted(() => {
               <span>Stock</span>
               <input v-model.number="store.form.stock" type="number" min="0" />
             </label>
+          </div>
+
+          <fieldset class="categories-fieldset">
+            <legend>Impuestos</legend>
+
+            <div v-if="selectedTaxes.length > 0" class="selected-categories">
+              <span v-for="tax in selectedTaxes" :key="tax.id" class="category-chip">
+                {{ tax.name }} ({{ tax.rate }}%)
+                <button
+                  type="button"
+                  class="chip-remove"
+                  :aria-label="'Quitar ' + tax.name"
+                  @click="removeTax(tax.id)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </span>
+            </div>
+
+            <div class="category-search-wrap">
+              <input
+                v-model="taxSearch"
+                type="text"
+                class="category-search-input"
+                placeholder="Buscar impuesto..."
+                aria-label="Buscar impuesto para añadir"
+                @input="onTaxSearch"
+                @focus="showTaxDropdown = true"
+                @blur="showTaxDropdown = false"
+              />
+              <div v-if="showTaxDropdown && taxResults.length > 0" class="category-dropdown">
+                <button
+                  v-for="tax in taxResults"
+                  :key="tax.id"
+                  type="button"
+                  class="category-dropdown-item"
+                  @mousedown.prevent="addTax(tax)"
+                >
+                  {{ tax.name }} ({{ tax.rate }}%)
+                </button>
+              </div>
+            </div>
+
+            <div v-if="taxLoading" class="categories-empty">Buscando...</div>
+          </fieldset>
+
+          <div v-if="selectedTaxes.length > 0" class="price-final-row">
+            <span>Precio final</span>
+            <span class="price-final-value">{{ formatCurrency(priceWithTax) }}</span>
           </div>
 
           <label class="field">
@@ -480,5 +586,25 @@ onUnmounted(() => {
   width: 560px;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.price-final-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.price-final-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
 </style>

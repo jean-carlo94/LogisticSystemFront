@@ -35,11 +35,23 @@ export const useSalesStore = defineStore('sales', () => {
 
   const saving = ref(false)
   const customerName = ref('')
+  const customerEmail = ref('')
+  const customerPhone = ref('')
+  const customerDocument = ref('')
+  const customerAddress = ref('')
   const notes = ref('')
 
   const cartTotal = computed(() => {
     return cart.value.reduce((sum, item) => {
       return sum + item.unit_price * item.quantity
+    }, 0)
+  })
+
+  const cartTaxTotal = computed(() => {
+    return cart.value.reduce((sum, item) => {
+      const subtotal = item.unit_price * item.quantity
+      const taxRate = (item.taxes ?? []).reduce((r, t) => r + t.rate, 0)
+      return sum + (subtotal * taxRate) / 100
     }, 0)
   })
 
@@ -173,6 +185,7 @@ export const useSalesStore = defineStore('sales', () => {
         quantity,
         unit_price: selectedProduct.value.price,
         stock: selectedProduct.value.stock,
+        taxes: selectedProduct.value.taxes ?? [],
       })
     }
 
@@ -180,6 +193,8 @@ export const useSalesStore = defineStore('sales', () => {
   }
 
   function addToCartDirect(product: Product) {
+    if (product.stock <= 0) return
+
     const existingIndex = cart.value.findIndex(
       (item) => item.product_id === product.id && item.shelf_id === null
     )
@@ -195,6 +210,7 @@ export const useSalesStore = defineStore('sales', () => {
         quantity: 1,
         unit_price: product.price,
         stock: product.stock,
+        taxes: product.taxes ?? [],
       })
     }
   }
@@ -217,6 +233,7 @@ export const useSalesStore = defineStore('sales', () => {
         quantity,
         unit_price: selectedProduct.value.price,
         stock: selectedProduct.value.stock,
+        taxes: selectedProduct.value.taxes ?? [],
       })
     }
 
@@ -244,18 +261,26 @@ export const useSalesStore = defineStore('sales', () => {
   function clearCart() {
     cart.value = []
     customerName.value = ''
+    customerEmail.value = ''
+    customerPhone.value = ''
+    customerDocument.value = ''
+    customerAddress.value = ''
     notes.value = ''
   }
 
   async function submitSale() {
-    if (cart.value.length === 0 || !customerName.value.trim()) return
+    if (cart.value.length === 0) return
 
     saving.value = true
     error.value = null
 
     try {
       await salesService.create({
-        customer_name: customerName.value.trim(),
+        customer_name: customerName.value.trim() || 'Consumidor final',
+        customer_email: customerEmail.value.trim() || undefined,
+        customer_phone: customerPhone.value.trim() || undefined,
+        customer_document: customerDocument.value.trim() || undefined,
+        customer_address: customerAddress.value.trim() || undefined,
         notes: notes.value.trim() || undefined,
         items: cart.value.map((item) => ({
           product_id: item.product_id,
@@ -264,6 +289,10 @@ export const useSalesStore = defineStore('sales', () => {
           unit_price: item.unit_price,
         })),
       })
+      for (const item of cart.value) {
+        const p = searchedProducts.value.find((pr) => pr.id === item.product_id)
+        if (p) p.stock -= item.quantity
+      }
       clearCart()
       fetchSales()
     } catch (e) {
@@ -295,6 +324,10 @@ export const useSalesStore = defineStore('sales', () => {
     selectedSale.value = null
     saving.value = false
     customerName.value = ''
+    customerEmail.value = ''
+    customerPhone.value = ''
+    customerDocument.value = ''
+    customerAddress.value = ''
     notes.value = ''
     if (searchTimer) {
       clearTimeout(searchTimer)
@@ -322,8 +355,13 @@ export const useSalesStore = defineStore('sales', () => {
     selectedSale,
     saving,
     customerName,
+    customerEmail,
+    customerPhone,
+    customerDocument,
+    customerAddress,
     notes,
     cartTotal,
+    cartTaxTotal,
     fetchSales,
     goToPage,
     setSize,

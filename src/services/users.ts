@@ -1,8 +1,13 @@
 import api, { unwrap, buildParams } from './api'
 import type { PaginatedResponse } from '@/types/pagination'
 import type { UserAdmin, UserAdminForm, UserRole } from '@/types/user'
+import type { RegisterPayload } from '@/types/auth'
 
 export const usersService = {
+  async create(payload: RegisterPayload): Promise<UserAdmin> {
+    return unwrap(api.post<UserAdmin>('/auth/register', payload))
+  },
+
   async getAll(page = 1, size = 20, filters?: Record<string, string>): Promise<PaginatedResponse<UserAdmin>> {
     return unwrap(api.get<PaginatedResponse<UserAdmin>>('/users/', { params: buildParams(page, size, filters) }))
   },

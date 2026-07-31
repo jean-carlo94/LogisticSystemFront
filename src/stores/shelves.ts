@@ -202,6 +202,7 @@ export const useShelvesStore = defineStore('shelves', () => {
       await shelvesService.addItem(shelfId, { product_id: productId, quantity })
       dropFeedback.value = `${productName} ×${quantity} asignado`
       await refreshDetail(shelfId)
+      fetchShelves()
       if (feedbackTimer) clearTimeout(feedbackTimer)
       feedbackTimer = setTimeout(() => {
         if (dropFeedback.value === `${productName} ×${quantity} asignado`) {
@@ -223,6 +224,7 @@ export const useShelvesStore = defineStore('shelves', () => {
         await shelvesService.updateItem(shelfId, itemId, { quantity })
       }
       await refreshDetail(shelfId)
+      fetchShelves()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al actualizar cantidad'
     }
@@ -234,6 +236,7 @@ export const useShelvesStore = defineStore('shelves', () => {
     try {
       await shelvesService.removeItem(shelfId, itemId)
       await refreshDetail(shelfId)
+      fetchShelves()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al remover producto'
     }

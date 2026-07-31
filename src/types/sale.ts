@@ -7,11 +7,17 @@ export interface SaleItem {
   quantity: number
   unit_price: number
   subtotal: number
+  tax_amount: number
 }
 
 export interface Sale {
   id: number
   customer_name: string
+  customer_email: string | null
+  customer_phone: string | null
+  customer_document: string | null
+  customer_address: string | null
+  customer_id: number | null
   total: number
   status: 'pending' | 'completed' | 'cancelled'
   notes: string | null
@@ -22,6 +28,10 @@ export interface Sale {
 
 export interface CreateSalePayload {
   customer_name: string
+  customer_email?: string
+  customer_phone?: string
+  customer_document?: string
+  customer_address?: string
   notes?: string
   items: { product_id: number; shelf_id?: number | null; quantity: number; unit_price: number }[]
 }
@@ -43,4 +53,5 @@ export interface CartItem {
   quantity: number
   unit_price: number
   stock: number
+  taxes: { id: number; name: string; rate: number }[]
 }

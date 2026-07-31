@@ -76,6 +76,7 @@ export const useProductsStore = defineStore('products', () => {
       height_cm: product.height_cm,
       depth_cm: product.depth_cm,
       category_ids: product.categories.map((c) => c.id),
+      tax_ids: product.taxes?.map((t) => t.id) ?? [],
     }
     editingId.value = product.id
     isFormOpen.value = true
@@ -140,10 +141,7 @@ export const useProductsStore = defineStore('products', () => {
     error.value = null
     try {
       await productsService.deleteImage(id)
-      const index = products.value.findIndex((p) => p.id === id)
-      if (index !== -1) {
-        products.value[index] = { ...products.value[index], image_path: null, image_url: null }
-      }
+      fetchProducts()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al eliminar imagen'
     } finally {

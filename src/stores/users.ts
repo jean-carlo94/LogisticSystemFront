@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { UserAdmin, UserAdminForm, UserRole } from '@/types/user'
 import type { Role } from '@/types/role'
 import { usersService } from '@/services/users'
@@ -27,6 +27,8 @@ export const useUsersStore = defineStore('users', () => {
   const total = ref(0)
   const pages = ref(0)
   const filterParams = ref<Record<string, string>>({})
+
+  const isEditing = computed(() => editingId.value !== null)
 
   async function fetchUsers() {
     loading.value = true
@@ -111,6 +113,12 @@ export const useUsersStore = defineStore('users', () => {
     isFormOpen.value = true
   }
 
+  function openCreateForm() {
+    form.value = { email: '', password: '', first_name: '', last_name: '', phone: '', city: '', country: '' }
+    editingId.value = null
+    isFormOpen.value = true
+  }
+
   function closeForm() {
     isFormOpen.value = false
     form.value = {}
@@ -119,27 +127,38 @@ export const useUsersStore = defineStore('users', () => {
   }
 
   async function saveUser(image?: File | null) {
-    if (editingId.value === null) return
     saving.value = true
     error.value = null
     try {
-      const payload: UserAdminForm = {}
-      if (form.value.email) payload.email = form.value.email
-      if (form.value.password) payload.password = form.value.password
-      if (form.value.first_name) payload.first_name = form.value.first_name
-      if (form.value.last_name) payload.last_name = form.value.last_name
-      if (form.value.phone) payload.phone = form.value.phone
-      if (form.value.city) payload.city = form.value.city
-      if (form.value.country) payload.country = form.value.country
-      if (form.value.is_active !== undefined) payload.is_active = form.value.is_active
+      if (editingId.value === null) {
+        await usersService.create({
+          email: form.value.email!,
+          password: form.value.password!,
+          first_name: form.value.first_name || undefined,
+          last_name: form.value.last_name || undefined,
+          phone: form.value.phone || undefined,
+          city: form.value.city || undefined,
+          country: form.value.country || undefined,
+        })
+      } else {
+        const payload: UserAdminForm = {}
+        if (form.value.email) payload.email = form.value.email
+        if (form.value.password) payload.password = form.value.password
+        if (form.value.first_name) payload.first_name = form.value.first_name
+        if (form.value.last_name) payload.last_name = form.value.last_name
+        if (form.value.phone) payload.phone = form.value.phone
+        if (form.value.city) payload.city = form.value.city
+        if (form.value.country) payload.country = form.value.country
+        if (form.value.is_active !== undefined) payload.is_active = form.value.is_active
 
-      await usersService.update(editingId.value, payload)
+        await usersService.update(editingId.value, payload)
 
-      if (image) {
-        const updated = await usersService.uploadImage(editingId.value, image)
-        const index = users.value.findIndex((u) => u.id === editingId.value)
-        if (index !== -1) {
-          users.value[index] = updated
+        if (image) {
+          const updated = await usersService.uploadImage(editingId.value, image)
+          const index = users.value.findIndex((u) => u.id === editingId.value)
+          if (index !== -1) {
+            users.value[index] = updated
+          }
         }
       }
 
@@ -201,6 +220,7 @@ export const useUsersStore = defineStore('users', () => {
     try {
       await usersService.assignUserRole(assignUserId.value, roleId)
       await fetchUserRoles(assignUserId.value)
+      fetchUsers()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al asignar rol'
     } finally {
@@ -213,10 +233,7 @@ export const useUsersStore = defineStore('users', () => {
     error.value = null
     try {
       await usersService.deleteImage(id)
-      const index = users.value.findIndex((u) => u.id === id)
-      if (index !== -1) {
-        users.value[index] = { ...users.value[index], image_path: null, image_url: null }
-      }
+      fetchUsers()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al eliminar imagen'
     } finally {
@@ -242,12 +259,14 @@ export const useUsersStore = defineStore('users', () => {
     total,
     pages,
     filterParams,
+    isEditing,
     fetchUsers,
     fetchRoles,
     setFilter,
     goToPage,
     setSize,
     openEditForm,
+    openCreateForm,
     closeForm,
     saveUser,
     deleteUser,

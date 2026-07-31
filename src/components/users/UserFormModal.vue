@@ -70,7 +70,7 @@ async function submitForm() {
         aria-labelledby="user-form-title"
         @keydown.escape="store.closeForm()"
       >
-        <h2 id="user-form-title">Editar usuario</h2>
+        <h2 id="user-form-title">{{ store.isEditing ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
         <form @submit.prevent="submitForm()" class="form">
           <div class="row">
             <label class="field">
@@ -84,7 +84,7 @@ async function submitForm() {
           </div>
           <label class="field">
             <span>Email</span>
-            <input v-model="store.form.email" type="email" placeholder="usuario@email.com" />
+            <input v-model="store.form.email" type="email" required placeholder="usuario@email.com" />
           </label>
           <label class="field">
             <span>Teléfono</span>
@@ -101,11 +101,11 @@ async function submitForm() {
             </label>
           </div>
           <label class="field">
-            <span>Nueva contraseña (dejar vacío para no cambiar)</span>
-            <input v-model="store.form.password" type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
+            <span>Contraseña{{ store.isEditing ? ' (dejar vacío para no cambiar)' : '' }}</span>
+            <input v-model="store.form.password" type="password" :required="!store.isEditing" minlength="6" maxlength="128" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
           </label>
 
-          <div class="image-section">
+          <div v-if="store.isEditing" class="image-section">
             <span class="image-section-label">Avatar</span>
 
             <div v-if="currentImageUrl() || imagePreview" class="image-preview-wrap">
