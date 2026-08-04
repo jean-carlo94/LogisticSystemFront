@@ -7,6 +7,8 @@ import SalesCart from '@/components/sales/SalesCart.vue'
 import SalesTable from '@/components/sales/SalesTable.vue'
 import SaleDetailModal from '@/components/sales/SaleDetailModal.vue'
 import ShelfPickerModal from '@/components/sales/ShelfPickerModal.vue'
+import PaymentFormModal from '@/components/payments/PaymentFormModal.vue'
+import SaleReceiptModal from '@/components/sales/SaleReceiptModal.vue'
 
 const store = useSalesStore()
 const shelvesStore = useShelvesStore()
@@ -38,6 +40,8 @@ onMounted(() => {
 
     <ShelfPickerModal />
     <SaleDetailModal />
+    <PaymentFormModal />
+    <SaleReceiptModal />
 
     <template v-if="tab === 'sale'">
       <div class="sales-layout">

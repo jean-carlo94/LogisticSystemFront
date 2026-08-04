@@ -41,4 +41,8 @@ export const authService = {
   async resetPassword(payload: ResetPasswordPayload): Promise<MessageResponse> {
     return unwrap(api.post<MessageResponse>('/auth/reset-password', payload))
   },
+
+  async pinLogin(email: string, pin: string): Promise<AuthResponse> {
+    return unwrap(api.post<AuthResponse>('/auth/pin-login', { email, pin }))
+  },
 }

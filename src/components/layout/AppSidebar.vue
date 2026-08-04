@@ -24,6 +24,9 @@ const links = computed(() => {
     { to: '/roles', label: 'Roles', icon: 'shield', show: store.hasPermission('roles_manage') },
     { to: '/users', label: 'Usuarios', icon: 'users', show: store.hasPermission('users_manage') },
     { to: '/tenants', label: 'Tenants', icon: 'building', show: store.hasPermission('tenants_manage') },
+    { to: '/stations', label: 'Estaciones', icon: 'monitor', show: store.hasPermission('stations_read') },
+    { to: '/customers', label: 'Clientes', icon: 'person', show: store.hasPermission('customers_read') },
+    { to: '/cash-register', label: 'Caja', icon: 'dollar', show: store.hasPermission('cash_register_read') },
     { to: '/taxes', label: 'Impuestos', icon: 'percent', show: store.hasPermission('taxes_read') },
   ]
   return items.filter(l => l.show)
@@ -108,6 +111,19 @@ function logout() {
           <line x1="9" y1="14" x2="9" y2="14.01"/>
           <line x1="15" y1="14" x2="15" y2="14.01"/>
           <path d="M9 18h6v4H9z"/>
+        </svg>
+        <svg v-else-if="link.icon === 'monitor'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <svg v-else-if="link.icon === 'person'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <svg v-else-if="link.icon === 'dollar'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
         <svg v-else-if="link.icon === 'percent'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="5" x2="5" y2="19"/>

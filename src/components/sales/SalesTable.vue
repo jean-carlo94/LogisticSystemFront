@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { useSalesStore } from '@/stores/sales'
+import { useAuthStore } from '@/stores/auth'
+import { usePaymentsStore } from '@/stores/payments'
 import { formatCurrency, formatDate } from '@/composables/useFormat'
 import Pagination from '@/components/ui/Pagination.vue'
 
 const store = useSalesStore()
+const auth = useAuthStore()
+const paymentsStore = usePaymentsStore()
+
+async function onCancel(saleId: number) {
+  await paymentsStore.cancelSale(saleId)
+  store.fetchSales()
+}
 </script>
 
 <template>
@@ -32,6 +41,9 @@ const store = useSalesStore()
             <td>
               <div class="actions-cell">
                 <button class="btn btn-ghost" @click="store.fetchSaleDetail(sale.id)">Detalle</button>
+                <button v-if="auth.hasPermission('sales_read')" class="btn btn-ghost" @click="paymentsStore.fetchReceipt(sale.id)">Recibo</button>
+                <button v-if="auth.hasPermission('payments_manage')" class="btn btn-ghost" @click="paymentsStore.openPaymentForm(sale.id, sale.total)">Pago</button>
+                <button v-if="auth.hasPermission('sales_cancel') && sale.status !== 'cancelled'" class="btn btn-ghost danger" @click="onCancel(sale.id)">Anular</button>
               </div>
             </td>
           </tr>

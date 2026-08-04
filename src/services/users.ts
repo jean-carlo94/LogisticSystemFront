@@ -39,4 +39,12 @@ export const usersService = {
   async deleteImage(id: number): Promise<void> {
     return unwrap(api.delete<void>(`/users/${id}/image`))
   },
+
+  async getOne(id: number): Promise<UserAdmin> {
+    return unwrap(api.get<UserAdmin>(`/users/${id}`))
+  },
+
+  async setPin(id: number, pin: string): Promise<void> {
+    return unwrap(api.put<void>(`/users/${id}/pin`, { pin }))
+  },
 }

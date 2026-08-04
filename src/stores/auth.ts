@@ -13,6 +13,10 @@ import { useSalesStore } from '@/stores/sales'
 import { useOrdersStore } from '@/stores/orders'
 import { useTenantsStore } from '@/stores/tenants'
 import { useTaxesStore } from '@/stores/taxes'
+import { useStationsStore } from '@/stores/stations'
+import { usePaymentsStore } from '@/stores/payments'
+import { useCustomersStore } from '@/stores/customers'
+import { useCashRegisterStore } from '@/stores/cashRegister'
 import { useAutoClearError } from '@/composables/useAutoClearError'
 
 function resetAllStores() {
@@ -26,6 +30,10 @@ function resetAllStores() {
   useOrdersStore().reset()
   useTenantsStore().reset()
   useTaxesStore().reset()
+  useStationsStore().reset()
+  usePaymentsStore().reset()
+  useCustomersStore().reset()
+  useCashRegisterStore().reset()
 }
 
 function _restoreTenant(): Tenant | null {

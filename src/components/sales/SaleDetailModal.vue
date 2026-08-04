@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSalesStore } from '@/stores/sales'
+import { useAuthStore } from '@/stores/auth'
+import { usePaymentsStore } from '@/stores/payments'
 import { formatCurrency, formatDate } from '@/composables/useFormat'
 
 const store = useSalesStore()
+const auth = useAuthStore()
+const paymentsStore = usePaymentsStore()
 
 const totalTax = computed(() => {
   if (!store.selectedSale?.items) return 0
@@ -14,6 +18,13 @@ const subtotal = computed(() => {
   if (!store.selectedSale?.items) return 0
   return store.selectedSale.items.reduce((sum, item) => sum + (item.subtotal ?? 0), 0)
 })
+
+async function onCancel() {
+  if (!store.selectedSale) return
+  await paymentsStore.cancelSale(store.selectedSale.id)
+  store.closeDetail()
+  store.fetchSales()
+}
 </script>
 
 <template>
@@ -106,6 +117,9 @@ const subtotal = computed(() => {
         </div>
 
         <div class="actions detail-actions">
+          <button v-if="auth.hasPermission('sales_read') && store.selectedSale" class="btn" @click="paymentsStore.fetchReceipt(store.selectedSale.id)">Recibo</button>
+          <button v-if="auth.hasPermission('payments_manage') && store.selectedSale" class="btn" @click="paymentsStore.openPaymentForm(store.selectedSale.id, store.selectedSale.total)">Registrar Pago</button>
+          <button v-if="auth.hasPermission('sales_cancel') && store.selectedSale?.status !== 'cancelled'" class="btn btn-ghost danger" @click="onCancel">Anular Venta</button>
           <button type="button" class="btn" @click="store.closeDetail()">Cerrar</button>
         </div>
       </div>

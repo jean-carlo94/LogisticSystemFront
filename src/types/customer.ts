@@ -9,3 +9,21 @@ export interface Customer {
   created_at: string
   updated_at: string
 }
+
+export interface CustomerForm {
+  name: string
+  email: string
+  phone: string
+  document: string
+  address: string
+}
+
+export function createEmptyCustomer(): CustomerForm {
+  return {
+    name: '',
+    email: '',
+    phone: '',
+    document: '',
+    address: '',
+  }
+}

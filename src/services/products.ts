@@ -39,4 +39,17 @@ export const productsService = {
   async getLocations(id: number): Promise<ProductLocation[]> {
     return unwrap(api.get<ProductLocation[]>(`/products/${id}/locations`))
   },
+
+  async getByBarcode(barcode: string): Promise<Product> {
+    return unwrap(api.get<Product>(`/products/by-barcode/${encodeURIComponent(barcode)}`))
+  },
+
+  async getQr(id: number): Promise<{
+    product_id: number
+    name: string
+    barcode: string | null
+    shelf: { code: string; aisle: string; row: number; level: number } | null
+  }> {
+    return unwrap(api.get(`/products/${id}/qr`))
+  },
 }
